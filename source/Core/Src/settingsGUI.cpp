@@ -913,7 +913,22 @@ static void displayAdvancedIDLEScreens(void) { OLED::drawCheckbox(getSettingValu
 static void displayAdvancedSolderingScreens(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::DetailedSoldering)); }
 
 #ifdef BLE_ENABLED
-static void displayBluetoothLE(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::BluetoothLE)); }
+static void displayBluetoothLE(void) {
+  switch (getSettingValue(SettingsOptions::BluetoothLE)) {
+  case 0:
+    OLED::drawUnavailableIcon();
+    break;
+  case 1:
+    OLED::print(translatedString(Tr->SettingBLEOnChar), FontStyle::LARGE);
+    break;
+  case 2:
+    OLED::print(translatedString(Tr->SettingBLEReadOnlyChar), FontStyle::LARGE);
+    break;
+  default:
+    OLED::drawUnavailableIcon();
+    break;
+  }
+}
 #endif /* BLE_ENABLED */
 
 static void displayPowerLimit(void) {
