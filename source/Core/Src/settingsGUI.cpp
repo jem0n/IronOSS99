@@ -430,7 +430,7 @@ const menuitem advancedMenu[] = {
    */
 #ifdef BLE_ENABLED
   /* Toggle BLE */
-  {SETTINGS_DESC(SettingsItemIndex::BluetoothLE), nullptr, displayBluetoothLE, nullptr, SettingsOptions::BluetoothLE, SettingsItemIndex::BluetoothLE, 7},
+  {SETTINGS_DESC(SettingsItemIndex::BluetoothLE), setBluetoothLE, displayBluetoothLE, nullptr, SettingsOptions::BluetoothLE, SettingsItemIndex::BluetoothLE, 7},
 #endif /* BLE_ENABLED */
   /* Power limit */
   {SETTINGS_DESC(SettingsItemIndex::PowerLimit), nullptr, displayPowerLimit, nullptr, SettingsOptions::PowerLimit, SettingsItemIndex::PowerLimit, 4},
