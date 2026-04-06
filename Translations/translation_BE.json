@@ -81,7 +81,9 @@
     "SettingStartSleepChar": "Ч",
     "SettingStartSleepOffChar": "Х",
     "SettingLockBoostChar": "Т",
-    "SettingLockFullChar": "П"
+    "SettingLockFullChar": "П",
+    "SettingBLEOnChar": "+",
+    "SettingBLEReadOnlyChar": "R"
   },
   "menuGroups": {
     "PowerMenu": {
