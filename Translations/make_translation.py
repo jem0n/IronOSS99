@@ -111,6 +111,8 @@ def write_start(f: TextIO):
     )
     f.write("\n")
     f.write('#include "Translation.h"\n')
+    # configuration.h defines OLED_128x32, which selects the larger font tables
+    f.write('#include "configuration.h"\n')
 
 
 def get_constants() -> List[Tuple[str, str]]:
@@ -198,8 +200,46 @@ def get_power_source_list() -> List[str]:
     ]
 
 
+# On 128x32 panels the scrolling menu descriptions are drawn with the small
+# (Terminus 8x16) font instead of the large one, so they must be ranked and
+# encoded against the small font. Set from the build macros in main().
+DESCRIPTIONS_USE_SMALL_FONT = False
+
+
 def test_is_small_font(msg: str) -> bool:
     return "\n" in msg and msg[0] != "\n"
+
+
+@functools.lru_cache(maxsize=None)
+def small_font_chars() -> frozenset:
+    """The set of characters that have a glyph in the small (6x8) font.
+
+    The small font only covers ASCII/Latin-Extended/Cyrillic/Greek; CJK glyphs
+    are rendered into the large (12x16) font exclusively. Used to decide whether
+    a message can be drawn in the small font at all.
+    """
+    chars: set = set()
+    for font in font_tables.ALL_PRE_RENDERED_FONTS:
+        _, font06 = font_tables.get_font_maps_for_name(font)
+        chars.update(font06.keys())
+    return frozenset(chars)
+
+
+def description_uses_small_font(msg: str) -> bool:
+    """Whether a menu description should be encoded/ranked in the small font.
+
+    Only when the small-font descriptions feature is enabled (128x32 panels)
+    AND every glyph in the message exists in the small font. CJK languages have
+    descriptions whose glyphs only exist in the large (12x16) font, so those
+    must stay in the large font or font generation fails. Both the symbol-set
+    ranking and the string encoding must use this same decision per message.
+    """
+    if not DESCRIPTIONS_USE_SMALL_FONT:
+        return False
+    stripped = (
+        msg.replace("\\n", "").replace("\\r", "").replace("\n", "").replace("\r", "")
+    )
+    return all(c in small_font_chars() for c in stripped)
 
 
 def get_letter_counts(defs: dict, lang: dict, build_version: str) -> Dict:
@@ -250,7 +290,10 @@ def get_letter_counts(defs: dict, lang: dict, build_version: str) -> Dict:
     for mod in defs["menuOptions"]:
         eid = mod["id"]
         msg = obj[eid]["description"]
-        big_font_messages.append(msg)
+        if description_uses_small_font(msg):
+            small_font_messages.append(msg)
+        else:
+            big_font_messages.append(msg)
 
     obj = lang["menuValues"]
     for mod in defs["menuValues"]:
@@ -274,7 +317,10 @@ def get_letter_counts(defs: dict, lang: dict, build_version: str) -> Dict:
     for mod in defs["menuGroups"]:
         eid = mod["id"]
         msg = obj[eid]["description"]
-        big_font_messages.append(msg)
+        if description_uses_small_font(msg):
+            small_font_messages.append(msg)
+        else:
+            big_font_messages.append(msg)
 
     constants = get_constants()
     for x in constants:
@@ -406,6 +452,84 @@ def get_cjk_glyph(sym: str) -> Optional[bytes]:
                     b |= 0x01 << r
             bs.append(b)
     return bytes(bs)
+
+
+# --- Terminus fonts: become SMALL (8x16) and LARGE (12x24) on 128x32 panels ---
+# (path, cell width, cell height, font ascent)
+TERMINUS_FONTS = {
+    "8x16": (
+        "terminus/ter-u16n.bdf",
+        8,
+        16,
+        12,
+    ),  # regular weight for the small/status font
+    "12x24": (
+        "terminus/ter-u24b.bdf",
+        12,
+        24,
+        19,
+    ),  # bold weight for the large/readout font
+}
+_terminus_cache: Dict[str, Font] = {}
+
+
+def _terminus_font(size: str) -> Font:
+    path = TERMINUS_FONTS[size][0]
+    if path not in _terminus_cache:
+        with open(os.path.join(HERE, path), "rb") as fh:
+            _terminus_cache[path] = bdfreader.read_bdf(fh)
+    return _terminus_cache[path]
+
+
+def get_terminus_bytes(sym: str, size: str) -> bytes:
+    """Render `sym` from a Terminus BDF into the IronOS column-major strip format.
+    Missing glyphs (or non-single-char symbols) render blank (compresses away)."""
+    _, dst_w, dst_h, ascent = TERMINUS_FONTS[size]
+    blank = bytes(dst_w * (dst_h // 8))
+    if len(sym) != 1:
+        return blank
+    try:
+        glyph: Glyph = _terminus_font(size)[ord(sym)]
+    except KeyError:
+        return blank
+    data = glyph.data
+    src_left, src_bottom, src_w, src_h = glyph.get_bounding_box()
+
+    def get_cell(x: int, y: int) -> bool:
+        adj_x = x - src_left
+        if adj_x < 0 or adj_x >= src_w:
+            return False
+        adj_y = y - (ascent - src_h - src_bottom)
+        if adj_y < 0 or adj_y >= src_h:
+            return False
+        return bool(data[src_h - adj_y - 1] & (1 << (src_w - adj_x - 1)))
+
+    bs = bytearray()
+    for block in range(dst_h // 8):
+        for c in range(dst_w):
+            b = 0
+            for r in range(8):
+                if get_cell(c, r + 8 * block):
+                    b |= 0x01 << r
+            bs.append(b)
+    return bytes(bs)
+
+
+def make_terminus_table_cpp(name: str, size: str, sym_list: List[str]) -> str:
+    out = f"const uint8_t {name}[] = {{\n"
+    for i, sym in enumerate(sym_list):
+        out += (
+            f"{bytes_to_c_hex(get_terminus_bytes(sym, size))}//0x{i + 2:X} -> {sym}\n"
+        )
+    out += f"}}; // {name}\n"
+    return out
+
+
+def terminus_block_bytes(size: str, sym_list: List[str]) -> bytes:
+    out = bytearray()
+    for sym in sym_list:
+        out.extend(get_terminus_bytes(sym, size))
+    return bytes(out)
 
 
 def get_bytes_from_font_index(index: int) -> bytes:
@@ -763,14 +887,27 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
     )
 
     if not compress_font:
-        font_table_text = make_font_table_cpp(
-            data.small_text_symbols,
-            data.large_text_symbols,
-            font_map,
-            small_font_symbol_conversion_table,
-            large_font_symbol_conversion_table,
+        # On 128x32 panels the SMALL/LARGE fonts are the larger Terminus
+        # 8x16/12x24; on every other model they are the original hand-drawn
+        # 6x8/12x16. Same array names so FontSectionInfo is unchanged.
+        f.write("#ifdef OLED_128x32\n")
+        f.write(
+            make_terminus_table_cpp("USER_FONT_12", "12x24", data.large_text_symbols)
         )
-        f.write(font_table_text)
+        f.write(
+            make_terminus_table_cpp("USER_FONT_6x8", "8x16", data.small_text_symbols)
+        )
+        f.write("#else\n")
+        f.write(
+            make_font_table_cpp(
+                data.small_text_symbols,
+                data.large_text_symbols,
+                font_map,
+                small_font_symbol_conversion_table,
+                large_font_symbol_conversion_table,
+            )
+        )
+        f.write("#endif /* OLED_128x32 */\n")
         f.write(
             "const FontSection FontSectionInfo = {\n"
             "    .font12_start_ptr = USER_FONT_12,\n"
@@ -782,33 +919,39 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
             "};\n"
         )
     else:
-        font12_uncompressed = bytearray()
+
+        def emit_compressed(name: str, data_bytes: bytes) -> None:
+            write_bytes_as_c_array(f, name, brieflz.compress(data_bytes))
+
+        # 128x32 panels use Terminus 8x16/12x24; every other model uses the
+        # hand-drawn fonts. Same array/buffer names so FontSectionInfo is
+        # unchanged (sizes via sizeof).
+        f.write("#ifdef OLED_128x32\n")
+        t12 = terminus_block_bytes("12x24", data.large_text_symbols)
+        t06 = terminus_block_bytes("8x16", data.small_text_symbols)
+        emit_compressed("font_12x16_brieflz", t12)
+        emit_compressed("font_06x08_brieflz", t06)
+        f.write(f"static uint8_t font12_out_buffer[{len(t12)}];\n")
+        f.write(f"static uint8_t font06_out_buffer[{len(t06)}];\n")
+        f.write("#else\n")
+        h12 = bytearray()
         for sym in data.large_text_symbols:
-            font12_uncompressed.extend(font_map.font12_maps[sym])
-        font12_compressed = brieflz.compress(bytes(font12_uncompressed))
-        logging.info(
-            f"Font table 12x16 compressed from {len(font12_uncompressed)} to {len(font12_compressed)} bytes (ratio {len(font12_compressed) / len(font12_uncompressed):.3})"
-        )
-
-        write_bytes_as_c_array(f, "font_12x16_brieflz", font12_compressed)
-        font06_uncompressed = bytearray()
+            h12.extend(font_map.font12_maps[sym])
+        h06 = bytearray()
         for sym in data.small_text_symbols:
-            font06_uncompressed.extend(font_map.font06_maps[sym])
-        font06_compressed = brieflz.compress(bytes(font06_uncompressed))
-        logging.info(
-            f"Font table 06x08 compressed from {len(font06_uncompressed)} to {len(font06_compressed)} bytes (ratio {len(font06_compressed) / len(font06_uncompressed):.3})"
-        )
-
-        write_bytes_as_c_array(f, "font_06x08_brieflz", font06_compressed)
+            h06.extend(font_map.font06_maps[sym])
+        emit_compressed("font_12x16_brieflz", bytes(h12))
+        emit_compressed("font_06x08_brieflz", bytes(h06))
+        f.write(f"static uint8_t font12_out_buffer[{len(h12)}];\n")
+        f.write(f"static uint8_t font06_out_buffer[{len(h06)}];\n")
+        f.write("#endif /* OLED_128x32 */\n")
 
         f.write(
-            f"static uint8_t font12_out_buffer[{len(font12_uncompressed)}];\n"
-            f"static uint8_t font06_out_buffer[{len(font06_uncompressed)}];\n"
             "const FontSection FontSectionInfo = {\n"
             "    .font12_start_ptr = font12_out_buffer,\n"
             "    .font06_start_ptr = font06_out_buffer,\n"
-            f"    .font12_decompressed_size = {len(font12_uncompressed)},\n"
-            f"    .font06_decompressed_size = {len(font06_uncompressed)},\n"
+            "    .font12_decompressed_size = sizeof(font12_out_buffer),\n"
+            "    .font06_decompressed_size = sizeof(font06_out_buffer),\n"
             "    .font12_compressed_source = font_12x16_brieflz,\n"
             "    .font06_compressed_source = font_06x08_brieflz,\n"
             "};\n"
@@ -922,7 +1065,9 @@ def write_languages(
         lang.get("languageLocalName", lang["languageCode"]) for lang in data.langs
     ]
 
-    f.write('#include "Translation_multi.h"')
+    f.write('#include "Translation_multi.h"\n')
+    # configuration.h defines OLED_128x32, which selects the larger font tables
+    f.write('#include "configuration.h"')
 
     f.write(f"\n// ---- {lang_names} ----\n\n")
 
@@ -1102,10 +1247,15 @@ def get_translation_strings_and_indices_text(
         translated_string_lookups[translation_id] = record
 
     def encode_string_and_add(
-        message: str, translation_id: str, force_large_text: bool = False
+        message: str,
+        translation_id: str,
+        force_large_text: bool = False,
+        force_small_text: bool = False,
     ):
         encoded_data: bytes
-        if force_large_text is False and test_is_small_font(message):
+        if force_small_text or (
+            force_large_text is False and test_is_small_font(message)
+        ):
             encoded_data = convert_string_bytes(
                 small_font_symbol_conversion_table, message
             )
@@ -1120,8 +1270,12 @@ def get_translation_strings_and_indices_text(
     for index, record in enumerate(defs["menuOptions"]):
         lang_data = lang["menuOptions"][record["id"]]
         # Add to translations the menu text and the description
+        use_small = description_uses_small_font(lang_data["description"])
         encode_string_and_add(
-            lang_data["description"], "menuOptions" + record["id"] + "description", True
+            lang_data["description"],
+            "menuOptions" + record["id"] + "description",
+            force_large_text=not use_small,
+            force_small_text=use_small,
         )
         encode_string_and_add(
             lang_data["displayText"], "menuOptions" + record["id"] + "displayText"
@@ -1136,8 +1290,12 @@ def get_translation_strings_and_indices_text(
     for index, record in enumerate(defs["menuGroups"]):
         lang_data = lang["menuGroups"][record["id"]]
         # Add to translations the menu text and the description
+        use_small = description_uses_small_font(lang_data["description"])
         encode_string_and_add(
-            lang_data["description"], "menuGroups" + record["id"] + "description", True
+            lang_data["description"],
+            "menuGroups" + record["id"] + "description",
+            force_large_text=not use_small,
+            force_small_text=use_small,
         )
         encode_string_and_add(
             lang_data["displayText"], "menuGroups" + record["id"] + "displayText"
@@ -1428,6 +1586,14 @@ def main() -> None:
         if args.macros
         else frozenset()
     )
+
+    global DESCRIPTIONS_USE_SMALL_FONT
+    # The Terminus fonts and the small-font menu descriptions that go with them
+    # are enabled on every 128x32 panel; non-128x32 models keep the compact
+    # hand-drawn fonts and large descriptions. CJK descriptions always fall back
+    # to the large font (see description_uses_small_font), since the small font
+    # has no CJK glyphs.
+    DESCRIPTIONS_USE_SMALL_FONT = "OLED_128x32" in macros
 
     language_data: LanguageData
     if args.input_pickled:
