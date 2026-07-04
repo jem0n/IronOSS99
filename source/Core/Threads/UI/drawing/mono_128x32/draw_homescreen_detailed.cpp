@@ -29,27 +29,32 @@ void ui_draw_homescreen_detailed(TemperatureType_t tipTemp) {
     }
     OLED::print(SmallSymbolVolts, FontStyle::SMALL);
   } else {
-    if (!(getSettingValue(SettingsOptions::CoolingTempBlink) && (tipTemp > 55) && (xTaskGetTickCount() % 1000 < 300))) {
-      // Blink temp if setting enable and temp < 55°
-      // 1000 tick/sec
-      // OFF 300ms ON 700ms
-      ui_draw_tip_temperature(true, FontStyle::LARGE); // draw in the temp
-    }
-    if (OLED::getRotation()) {
-      OLED::setCursor(6, 0);
-    } else {
-      OLED::setCursor(73, 0); // top right
-    }
-    // draw set temp
-    OLED::printNumber(getSettingValue(SettingsOptions::SolderingTemp), 3, FontStyle::SMALL);
+    // One-line LARGE (12x24) tip temperature flush to one edge, vertically
+    // centred; two SMALL (8x16) status rows (set-temp, voltage) flush to the
+    // other edge. Sides flip with rotation.
+    const bool    rot      = OLED::getRotation();
+    const uint8_t statusW  = 5 * 8;              // "NNN°C" / "NN.NV" are 5 cells in the 8x16 small font
+    const uint8_t tempW    = (3 * 12) + (2 * 8); // 3 large digits + small "°C" = 52px
+    const uint8_t tempZone = 68;                 // temperature right-aligned within this zone (left of the status block)
+    const int16_t tempX    = rot ? (OLED_WIDTH - tempZone) : (tempZone - tempW);
+    const int16_t statusX  = rot ? 0 : (OLED_WIDTH - statusW);
 
+    if (!(getSettingValue(SettingsOptions::CoolingTempBlink) && (tipTemp > 55) && (xTaskGetTickCount() % 1000 < 300))) {
+      // Blink temp if setting enable and temp < 55° (OFF 300ms / ON 700ms)
+      OLED::setCursor(tempX, 4); // 24px number, vertically centred (4px above/below)
+      ui_draw_tip_temperature(false, FontStyle::LARGE);
+      // Degree + unit in the small font, bottom-aligned with the 24px number (like the TS100)
+      OLED::setCursor(OLED::getCursorX(), 12);
+      OLED::printSymbolDeg(FontStyle::SMALL);
+    }
+
+    // Set temperature (top row)
+    OLED::setCursor(statusX, 0);
+    OLED::printNumber(getSettingValue(SettingsOptions::SolderingTemp), 3, FontStyle::SMALL);
     OLED::printSymbolDeg(FontStyle::SMALL);
 
-    if (OLED::getRotation()) {
-      OLED::setCursor(0, 8);
-    } else {
-      OLED::setCursor(67, 8); // bottom right
-    }
+    // Input voltage (bottom row)
+    OLED::setCursor(statusX, 16);
     printVoltage(); // draw voltage then symbol (v)
     OLED::print(SmallSymbolVolts, FontStyle::SMALL);
   }
