@@ -74,6 +74,10 @@ enum class FontStyle {
   SMALL,
   LARGE,
   EXTRAS,
+#ifdef OLED_128x32
+  HUGE,        // LARGE font pixel-doubled to 24x32; must be drawn at y == 0
+  EXTRAS_HUGE, // Symbol font pixel-doubled to 24x32
+#endif
 };
 
 class OLED {
@@ -142,6 +146,9 @@ public:
   static void drawSymbol(uint8_t symbolID);                                                           // Used for drawing symbols of a predictable width
   static void drawArea(int16_t x, int8_t y, uint8_t wide, uint8_t height, const uint8_t *ptr);        // Draw an area, but y must be aligned on 0/8 offset
   static void drawAreaSwapped(int16_t x, int8_t y, uint8_t wide, uint8_t height, const uint8_t *ptr); // Draw an area, but y must be aligned on 0/8 offset
+#ifdef OLED_128x32
+  static void drawAreaDoubled(int16_t x, int8_t y, uint8_t wide, uint8_t height, const uint8_t *ptr); // Draw an area scaled 2x in both axes
+#endif
   static void fillArea(int16_t x, int8_t y, uint8_t wide, uint8_t height, const uint8_t value);       // Fill an area, but y must be aligned on 0/8 offset
   static void drawFilledRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool clear);
   static void drawHeatSymbol(uint8_t state);

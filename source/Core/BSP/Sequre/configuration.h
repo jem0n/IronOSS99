@@ -289,6 +289,7 @@
 #define HANDLE_DERATE_MIN_PERCENT 20
 
 #define OLED_128x32
+#define OLED_128x32_HIRES_UI // Use the full 128x32 UI instead of the scaled 96x16 layout
 #define GPIO_VIBRATION
 #define POW_PD_EXT                2
 #define USB_PD_EPR_WATTAGE        0 /*No EPR*/
