@@ -88,6 +88,7 @@ The links in the table below allow to download available builds directly:
 | Sequre   S60          | [S60.zip](https://github.com/Ralim/IronOS/releases/download/v2.23/S60.zip)                                   | [S60.zip](https://nightly.link/Ralim/IronOS/workflows/push/dev/S60.zip)                                   |
 | Sequre   S60P         | Not Released                                                                                                 | [S60P.zip](https://nightly.link/Ralim/IronOS/workflows/push/dev/S60P.zip)                                 |
 | Sequre   T55          | Not Released                                                                                                 | [T55.zip](https://nightly.link/Ralim/IronOS/workflows/push/dev/T55.zip)                                   |
+| Sequre   S99          | Not Released                                                                                                 | [S99.zip](https://nightly.link/Ralim/IronOS/workflows/push/dev/S99.zip)                                   |
 
 ## Key Features
 
