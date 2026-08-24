@@ -51,6 +51,17 @@ static const uint16_t NTCHandleLookup[] = {
     9330,  40, //
     8786,  42, //
     8269,  44, //
+    // Extended beyond the measured points using the same NTC model (10K, B~4000, reading ~= 32767*R/(R+13K))
+    // so the handle temperature is usable for CJC and for derating when the handle / MOSFET area gets hot.
+    7301,  48, //
+    6437,  52, //
+    5670,  56, //
+    4990,  60, //
+    4394,  64, //
+    3871,  68, //
+    3412,  72, //
+    3011,  76, //
+    2660,  80, //
 };
 
 uint16_t getHandleTemperature(uint8_t sample) {
@@ -63,7 +74,7 @@ uint16_t getHandleTemperature(uint8_t sample) {
       return NTCHandleLookup[(i * 2) + 1] * 10;
     }
   }
-  return 45 * 10;
+  return 85 * 10;
 #else
   return 0; // Not implemented
 #endif
