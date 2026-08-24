@@ -265,10 +265,23 @@
 #define THERMAL_RUNAWAY_TIME_SEC 20
 #define THERMAL_RUNAWAY_TEMP_C   10
 
-// The cartridge resistance is user selectable, so the power maths is right for both the stock and C245 style tips
+/*
+ * Tip / output stage handling
+ *
+ * The S99 drives the cartridge directly from a MOSFET with no inductor, so the only way to keep the average current
+ * below what the supply can deliver is to chop the output with a fast PWM. Hard switching 8A (2.5 ohm cartridge on 20V)
+ * at ~11 kHz is what cooks the MOSFET, so:
+ *  - The cartridge resistance is user selectable (stock 5 ohm or JBC style 2.5 ohm) so the current maths is right.
+ *  - Power is regulated with the slow (~20 Hz) envelope like every other iron; the fast chop is only applied
+ *    inside the envelope on-time and only at the duty needed to respect the supply current limit.
+ *    A 5 ohm cartridge on a 20V/5A supply, or any DC supply, therefore never gets chopped at all.
+ *  - The chop frequency is user selectable (Power menu) for supplies that tolerate slower switching.
+ */
 #define TIP_RESISTANCE           55 // x10 ohms; stock 5.5 ohm cartridge
 #define TIP_TYPE_SUPPORT         1  // Support for tips of different types, i.e. resistance
 #define TIPTYPE_C245             1  // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
+#define TIP_CURRENT_LIMIT_CHOP   1  // Envelope PWM for power, fast chop only for supply current limiting
+#define TIP_CHOP_FREQ_SETTING    1  // Expose the chop frequency as a user setting
 
 #define OLED_128x32
 #define GPIO_VIBRATION
@@ -284,7 +297,7 @@
 #define OLED_I2CBB2
 #define FILTER_DISPLAYED_TIP_TEMP 4 // Filtering for GUI display
 
-#define MODEL_HAS_DCDC // We dont have DC/DC but have reallly fast PWM that gets us roughly the same place
+#define MODEL_HAS_DCDC // No DC/DC, but the fast chop keeps the average current within the supply limit so PD can pick max voltage
 #endif                 /* S99 */
 
 #define FLASH_LOGOADDR      (0x08000000 + (62 * 1024))

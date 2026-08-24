@@ -352,6 +352,10 @@
     "SolderingTipType": {
       "displayText": "Tipo di\npunta",
       "description": "Seleziona il modello della punta in uso"
+    },
+    "TipChopFrequency": {
+      "displayText": "Chop\nfreq (kHz)",
+      "description": "Fast output chopping frequency for supply current limiting. Lower = cooler MOSFET, but the supply must tolerate longer current pulses."
     }
   }
 }

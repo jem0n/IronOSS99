@@ -352,6 +352,10 @@
     "SolderingTipType": {
       "displayText": "Löt-\nspitzentyp",
       "description": "Wählen Sie den Typ der eingesetzten Spitze"
+    },
+    "TipChopFrequency": {
+      "displayText": "Chop-\nFreq. (kHz)",
+      "description": "Frequenz der schnellen Ausgangstaktung zur Strombegrenzung am Netzteil. Niedriger = kühlerer MOSFET, das Netzteil muss aber längere Strompulse vertragen."
     }
   }
 }

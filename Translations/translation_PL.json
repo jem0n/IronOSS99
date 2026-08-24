@@ -352,6 +352,10 @@
     "SolderingTipType": {
       "displayText": "Typ grotu",
       "description": "Wybierz typ zamontowanego grotu"
+    },
+    "TipChopFrequency": {
+      "displayText": "Chop\nfreq (kHz)",
+      "description": "Fast output chopping frequency for supply current limiting. Lower = cooler MOSFET, but the supply must tolerate longer current pulses."
     }
   }
 }

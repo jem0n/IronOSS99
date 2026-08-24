@@ -670,6 +670,15 @@
       "maxLen": 7,
       "maxLen2": 15,
       "description": "For manually selecting the type of tip fitted"
+    },
+    {
+      "id": "TipChopFrequency",
+      "maxLen": 6,
+      "maxLen2": 13,
+      "include": [
+        "TIP_CHOP_FREQ_SETTING"
+      ],
+      "description": "Frequency in kHz of the fast output chopping used to keep the average tip current within the supply limit. Lower values run the MOSFET cooler but need a supply that tolerates longer current pulses."
     }
   ]
 }
