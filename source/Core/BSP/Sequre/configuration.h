@@ -265,7 +265,10 @@
 #define THERMAL_RUNAWAY_TIME_SEC 20
 #define THERMAL_RUNAWAY_TEMP_C   10
 
-#define TIP_RESISTANCE 20 //(actually 2.5 ish but we need to be more conservative on pwm'ing watt limit) x10 ohms
+// The cartridge resistance is user selectable, so the power maths is right for both the stock and C245 style tips
+#define TIP_RESISTANCE           55 // x10 ohms; stock 5.5 ohm cartridge
+#define TIP_TYPE_SUPPORT         1  // Support for tips of different types, i.e. resistance
+#define TIPTYPE_C245             1  // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
 
 #define OLED_128x32
 #define GPIO_VIBRATION

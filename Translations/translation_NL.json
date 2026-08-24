@@ -132,6 +132,12 @@
     },
     "TipTypeJBCC210": {
       "displayText": "JBC\nC210"
+    },
+    "TipTypeC245Stock": {
+      "displayText": "Stock\n5.5 Ohm"
+    },
+    "TipTypeC245JBC": {
+      "displayText": "JBC\n2.5 Ohm"
     }
   },
   "menuOptions": {

@@ -142,6 +142,10 @@ typedef enum {
   // #ifdef TIPTYPE_JBC
   //   JBC_210_2_5_OHM, // Small JBC tips as used in the S60/S60P
   // #endif
+#ifdef TIPTYPE_C245
+  C245_5_5_OHM, // Sequre stock 5.5 ohm cartridge (S99 default)
+  C245_2_5_OHM, // JBC (or clone) 2.5 ohm C245 style cartridge
+#endif
   TIP_TYPE_MAX, // Max value marker
 } tipType_t;
 #else
