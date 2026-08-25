@@ -1,0 +1,71 @@
+name: S99 nightly
+
+on:
+  schedule:
+    # Every night at 02:00 UTC, builds the default branch (dev)
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+
+jobs:
+  build_s99:
+    runs-on: ubuntu-24.04
+    container:
+      image: alpine:3.21
+
+    steps:
+      - name: Install dependencies (apk)
+        run: apk add --no-cache gcc-riscv-none-elf g++-riscv-none-elf gcc-arm-none-eabi g++-arm-none-eabi newlib-riscv-none-elf newlib-arm-none-eabi findutils python3 py3-pip make git bash zip
+
+      - name: Install dependencies (python)
+        run: python3 -m pip install --break-system-packages bdflib
+
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Git ownership exception
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Build S99
+        run: cd source && ./build.sh -m S99
+
+      - name: Copy license files
+        run: cp LICENSE scripts/LICENSE_RELEASE.md source/Hexfile/
+
+      - name: Generate json index file
+        run: ./source/metadata.py S99.json
+
+      - name: Package S99.zip
+        run: |
+          cd source/Hexfile
+          zip -j ../../S99.zip S99_*.hex S99_*.bin S99_*.dfu S99.json LICENSE LICENSE_RELEASE.md
+
+      - name: Archive S99 artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: S99
+          path: |
+            source/Hexfile/S99_*.hex
+            source/Hexfile/S99_*.bin
+            source/Hexfile/S99_*.dfu
+            source/Hexfile/S99.json
+            source/Hexfile/LICENSE
+            source/Hexfile/LICENSE_RELEASE.md
+          if-no-files-found: error
+
+      - name: Publish rolling "s99-nightly" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: s99-nightly
+          name: S99 nightly (${{ github.sha }})
+          prerelease: true
+          body: |
+            Automated nightly build of the Sequre S99 firmware from `${{ github.ref_name }}` @ `${{ github.sha }}`.
+            Flash `S99_<lang>.hex` / `.bin` per the docs. Not a stable release.
+          files: S99.zip
