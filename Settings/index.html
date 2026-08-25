@@ -189,6 +189,8 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#setting-soldering-tip-type">Setting: Soldering Tip Type</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#setting-chop-freq-khz">Setting: Chop freq (kHz)</a>
+    </li>
         </ul>
     </li>
     </ul>
@@ -301,7 +303,7 @@ This is the "on device help text".</p>
 <p>On device help text:</p>
 <p>PD negotiation timeout in 100ms steps for compatibility with some QC chargers</p>
 <h3 id="setting-pd-mode">Setting: PD Mode</h3>
-<p>Adjusts how the USB-PD Logic selects the voltage. No Dynamic disables EPR &amp; PPS protocols, Safe mode does not use padding resistance (will select a slightly lower voltage).</p>
+<p>No Dynamic disables EPR &amp; PPS, Safe mode does not use padding resistance</p>
 <p>On device help text:</p>
 <p>No Dynamic disables EPR &amp; PPS, Safe mode does not use padding resistance</p>
 <h3 id="setting-boost-temp">Setting: Boost temp</h3>
@@ -494,6 +496,10 @@ Hence, never repeat the calibration in quick succession!</p>
 <p>For manually selecting the type of tip fitted</p>
 <p>On device help text:</p>
 <p>Select the tip type fitted</p>
+<h3 id="setting-chop-freq-khz">Setting: Chop freq (kHz)</h3>
+<p>Frequency in kHz of the fast output chopping used to keep the average tip current within the supply limit. Lower values run the MOSFET cooler but need a supply that tolerates longer current pulses.</p>
+<p>On device help text:</p>
+<p>Fast output chopping frequency for supply current limiting. Lower = cooler MOSFET, but the supply must tolerate longer current pulses.</p>
               
             </div>
           </div><footer>
