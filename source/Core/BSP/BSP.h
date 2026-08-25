@@ -37,6 +37,13 @@ void BSPInit(void);
 void resetWatchdog();
 // Accepts a output level of 0.. to use to control the tip output PWM
 void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM);
+#ifdef TIP_CURRENT_LIMIT_CHOP
+// Fraction (x256) of the output on-time that the fast chop leaves the tip powered, so that the average
+// tip current stays within the supply limit. 256 == no chopping. Recomputes & latches the value used by the ISR.
+uint16_t getTipChopDutyX256();
+// Currently selected chop frequency in Hz x10 (for display)
+uint32_t getTipChopFrequencyHzX10();
+#endif
 // Returns the Handle temp in C, X10
 uint16_t getHandleTemperature(uint8_t sample);
 // Returns the Tip temperature ADC reading in raw units

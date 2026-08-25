@@ -108,6 +108,7 @@ enum class SettingsItemIndex : uint8_t {
   SettingsReset,
   LanguageSwitch,
   SolderingTipType,
+  TipChopFrequency,
   NUM_ITEMS,
 };
 
@@ -157,6 +158,8 @@ struct TranslationIndexTable {
   uint16_t TipTypeT12PTS;
   uint16_t TipTypeTS80;
   uint16_t TipTypeJBCC210;
+  uint16_t TipTypeC245Stock;
+  uint16_t TipTypeC245JBC;
 
   uint16_t SettingsDescriptions[static_cast<uint32_t>(SettingsItemIndex::NUM_ITEMS)];
   uint16_t SettingsShortNames[static_cast<uint32_t>(SettingsItemIndex::NUM_ITEMS)];

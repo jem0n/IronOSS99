@@ -77,8 +77,9 @@ enum SettingsOptions {
   HallEffectSleepTime            = 53, // Seconds (/5) timeout to sleep when hall effect over threshold
   SolderingTipType               = 54, // Selecting the type of soldering tip fitted
   ReverseButtonSettings          = 55, // Change the A and B button assigment in Settings menu
+  TipChopFrequency               = 56, // Fast chop frequency index used for supply current limiting (TIP_CURRENT_LIMIT_CHOP)
   //
-  SettingsOptionsLength = 56, // End marker
+  SettingsOptionsLength = 57, // End marker
 };
 
 typedef enum {
@@ -142,6 +143,10 @@ typedef enum {
   // #ifdef TIPTYPE_JBC
   //   JBC_210_2_5_OHM, // Small JBC tips as used in the S60/S60P
   // #endif
+#ifdef TIPTYPE_C245
+  C245_5_5_OHM, // Sequre stock 5.5 ohm cartridge (S99 default)
+  C245_2_5_OHM, // JBC (or clone) 2.5 ohm C245 style cartridge
+#endif
   TIP_TYPE_MAX, // Max value marker
 } tipType_t;
 #else

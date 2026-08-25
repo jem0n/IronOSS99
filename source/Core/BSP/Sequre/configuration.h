@@ -251,23 +251,45 @@
 #define CALIBRATION_OFFSET 200 // Default adc offset in uV
 #define PID_POWER_LIMIT    70  // Sets the max pwm power limit
 #define POWER_LIMIT        0   // 0 watts default limit
-#define MAX_POWER_LIMIT    70
+#define MAX_POWER_LIMIT    130
 #define POWER_LIMIT_STEPS  5
 #define OP_AMP_GAIN_STAGE  237 // Two sequential op-amps 1st: 1+(9k29/997R)=10.31 2nd: 1+(22k/1k)=23 -> 10.31*23=237
 #define TEMP_uV_LOOKUP_S99
 #define USB_PD_VMAX        20  // Maximum voltage for PD to negotiate
 #define USB_PD_TIMEOUT     1   // Default Timeout for USB-PD Protocol negotiation in x100ms
 
-#define HARDWARE_MAX_WATTAGE_X10 1300
+#define HARDWARE_MAX_WATTAGE_X10      1300
+#define ENFORCE_HARDWARE_MAX_WATTAGE  1 // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
 
 #define TIP_THERMAL_MASS    8   // X10 watts to raise 1 deg C in 1 second
 #define TIP_THERMAL_INERTIA 128 // We use a large inertia value to smooth out the drive to the tip since its stupidly sensitive
 #define THERMAL_RUNAWAY_TIME_SEC 20
 #define THERMAL_RUNAWAY_TEMP_C   10
 
-#define TIP_RESISTANCE 20 //(actually 2.5 ish but we need to be more conservative on pwm'ing watt limit) x10 ohms
+/*
+ * Tip / output stage handling
+ *
+ * The S99 drives the cartridge directly from a MOSFET with no inductor, so the only way to keep the average current
+ * below what the supply can deliver is to chop the output with a fast PWM. Hard switching 8A (2.5 ohm cartridge on 20V)
+ * at ~11 kHz is what cooks the MOSFET, so:
+ *  - The cartridge resistance is user selectable (stock 5 ohm or JBC style 2.5 ohm) so the current maths is right.
+ *  - Power is regulated with the slow (~20 Hz) envelope like every other iron; the fast chop is only applied
+ *    inside the envelope on-time and only at the duty needed to respect the supply current limit.
+ *    A 5 ohm cartridge on a 20V/5A supply, or any DC supply, therefore never gets chopped at all.
+ *  - The chop frequency is user selectable (Power menu) for supplies that tolerate slower switching.
+ *  - Power is derated when the handle gets hot, as a last line of defence for the MOSFET.
+ */
+#define TIP_RESISTANCE           55 // x10 ohms; stock 5.5 ohm cartridge
+#define TIP_TYPE_SUPPORT         1  // Support for tips of different types, i.e. resistance
+#define TIPTYPE_C245             1  // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
+#define TIP_CURRENT_LIMIT_CHOP   1  // Envelope PWM for power, fast chop only for supply current limiting
+#define TIP_CHOP_FREQ_SETTING    1  // Expose the chop frequency as a user setting
+#define HANDLE_DERATE_START_C    55 // Start reducing max power above this handle temperature
+#define HANDLE_DERATE_END_C      70 // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
+#define HANDLE_DERATE_MIN_PERCENT 20
 
 #define OLED_128x32
+#define OLED_128x32_HIRES_UI // Use the full 128x32 UI instead of the scaled 96x16 layout
 #define GPIO_VIBRATION
 #define POW_PD_EXT                2
 #define USB_PD_EPR_WATTAGE        0 /*No EPR*/
@@ -281,7 +303,7 @@
 #define OLED_I2CBB2
 #define FILTER_DISPLAYED_TIP_TEMP 4 // Filtering for GUI display
 
-#define MODEL_HAS_DCDC // We dont have DC/DC but have reallly fast PWM that gets us roughly the same place
+#define MODEL_HAS_DCDC // No DC/DC, but the fast chop keeps the average current within the supply limit so PD can pick max voltage
 #endif                 /* S99 */
 
 #define FLASH_LOGOADDR      (0x08000000 + (62 * 1024))

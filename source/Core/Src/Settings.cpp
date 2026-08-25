@@ -111,6 +111,7 @@ static const SettingConstants settingsConstants[(int)SettingsOptions::SettingsOp
     {                     0,                                                                    12,                 1,                            0}, // HallEffectSleepTime
     {                     0, (tipType_t::TIP_TYPE_MAX - 1) > 0 ? (tipType_t::TIP_TYPE_MAX - 1) : 0,                 1,                            0}, // SolderingTipType
     {                     0,                                                                     1,                 1,                            0}, // ReverseButtonSettings
+    {                     0,                                                                     3,                 1,                            0}, // TipChopFrequency
 };
 static_assert((sizeof(settingsConstants) / sizeof(SettingConstants)) == ((int)SettingsOptions::SettingsOptionsLength));
 
@@ -326,6 +327,14 @@ const char *lookupTipName() {
     return translatedString(Tr->TipTypeJBCC210);
     break;
 #endif
+#ifdef TIPTYPE_C245
+  case tipType_t::C245_5_5_OHM:
+    return translatedString(Tr->TipTypeC245Stock);
+    break;
+  case tipType_t::C245_2_5_OHM:
+    return translatedString(Tr->TipTypeC245JBC);
+    break;
+#endif
 #ifdef AUTO_TIP_SELECTION
   case tipType_t::TIP_TYPE_AUTO:
 #endif
@@ -365,6 +374,14 @@ uint8_t getUserSelectedTipResistance() {
 #endif
 #ifdef TIPTYPE_JBC
   case tipType_t::JBC_210_2_5_OHM:
+    return 25;
+    break;
+#endif
+#ifdef TIPTYPE_C245
+  case tipType_t::C245_5_5_OHM:
+    return 55;
+    break;
+  case tipType_t::C245_2_5_OHM:
     return 25;
     break;
 #endif

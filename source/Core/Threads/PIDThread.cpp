@@ -300,6 +300,26 @@ int32_t getX10WattageLimits() {
   if (powerSupplyWattageLimit && limit > powerSupplyWattageLimit * 10) {
     limit = powerSupplyWattageLimit * 10;
   }
+#ifdef ENFORCE_HARDWARE_MAX_WATTAGE
+  // Never exceed what the output stage is rated for, even on DC input where there is no supply limit
+  if (limit > HARDWARE_MAX_WATTAGE_X10) {
+    limit = HARDWARE_MAX_WATTAGE_X10;
+  }
+#endif
+#ifdef HANDLE_DERATE_START_C
+  // Derate the output when the handle is getting hot; the MOSFET shares the handle with the NTC.
+  // Linear ramp from 100% at HANDLE_DERATE_START_C down to HANDLE_DERATE_MIN_PERCENT at HANDLE_DERATE_END_C.
+  {
+    const int32_t handleC = getHandleTemperature(0) / 10;
+    if (handleC > HANDLE_DERATE_START_C) {
+      int32_t percent = 100 - (((handleC - HANDLE_DERATE_START_C) * (100 - HANDLE_DERATE_MIN_PERCENT)) / (HANDLE_DERATE_END_C - HANDLE_DERATE_START_C));
+      if (percent < HANDLE_DERATE_MIN_PERCENT) {
+        percent = HANDLE_DERATE_MIN_PERCENT;
+      }
+      limit = (limit * percent) / 100;
+    }
+  }
+#endif
   return limit;
 }
 

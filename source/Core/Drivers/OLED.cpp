@@ -166,7 +166,13 @@ void OLED::drawChar(const uint16_t charCode, const FontStyle fontStyle, const ui
   const uint8_t *currentFont;
   static uint8_t fontWidth, fontHeight;
   uint16_t       index;
+  bool           doubled = false;
   switch (fontStyle) {
+#ifdef OLED_128x32
+  case FontStyle::EXTRAS_HUGE:
+    doubled = true;
+    // fallthrough
+#endif
   case FontStyle::EXTRAS:
     currentFont = ExtraFontChars;
     index       = charCode;
@@ -183,14 +189,27 @@ void OLED::drawChar(const uint16_t charCode, const FontStyle fontStyle, const ui
       fontHeight = 8;
       fontWidth  = 6;
       break;
+#ifdef OLED_128x32
+    case FontStyle::HUGE:
+      doubled = true;
+      // fallthrough
+#endif
     case FontStyle::LARGE:
     default:
       fontHeight = 16;
       fontWidth  = 12;
       break;
     }
-    if (charCode == '\x01' && cursor_y == 0) { // 0x01 is used as new line char
-      setCursor(soft_x_limit, fontHeight);
+    if (charCode == '\x01') { // 0x01 is used as new line char
+#ifdef OLED_128x32
+      if (cursor_y + (2 * fontHeight) <= OLED_HEIGHT) {
+        setCursor(soft_x_limit, cursor_y + fontHeight);
+      }
+#else
+      if (cursor_y == 0) {
+        setCursor(soft_x_limit, fontHeight);
+      }
+#endif
       return;
     } else if (charCode <= 0x01) {
       return;
@@ -201,6 +220,13 @@ void OLED::drawChar(const uint16_t charCode, const FontStyle fontStyle, const ui
     break;
   }
   const uint8_t *charPointer = currentFont + ((fontWidth * (fontHeight / 8)) * index);
+#ifdef OLED_128x32
+  if (doubled) {
+    drawAreaDoubled(cursor_x, cursor_y, fontWidth, fontHeight, charPointer);
+    cursor_x += 2 * fontWidth;
+    return;
+  }
+#endif
   drawArea(cursor_x, cursor_y, fontWidth, fontHeight, charPointer);
   cursor_x += fontWidth;
 }
@@ -578,6 +604,12 @@ void OLED::printWholeScreen(const char *string) {
 // Print *F or *C - in font style of Small, Large (by default) or Extra based on input arg
 void OLED::printSymbolDeg(const FontStyle fontStyle) {
   switch (fontStyle) {
+#ifdef OLED_128x32
+  case FontStyle::HUGE:
+  case FontStyle::EXTRAS_HUGE:
+    drawChar(getSettingValue(SettingsOptions::TemperatureInF) ? 0 : 1, FontStyle::EXTRAS_HUGE, 0);
+    break;
+#endif
   case FontStyle::EXTRAS:
     // Picks *F or *C in ExtraFontChars[] from Font.h
     OLED::drawSymbol(getSettingValue(SettingsOptions::TemperatureInF) ? 0 : 1);
@@ -695,6 +727,44 @@ void OLED::drawArea(int16_t x, int8_t y, uint8_t width, uint8_t height, const ui
     rowsDrawn++;
   }
 }
+
+#ifdef OLED_128x32
+// Spread the 4 low bits of a nibble so each becomes 2 adjacent bits (0b1010 -> 0b11001100)
+static inline uint8_t doubleNibble(uint8_t n) {
+  n &= 0x0F;
+  n = (n | (n << 2)) & 0x33;
+  n = (n | (n << 1)) & 0x55;
+  return n | (n << 1);
+}
+
+// Draw an area scaled 2x; source y must be 8 aligned and the result must fit in the display height
+void OLED::drawAreaDoubled(int16_t x, int8_t y, uint8_t width, uint8_t height, const uint8_t *ptr) {
+  const int16_t outWidth = 2 * width;
+  if (x <= -outWidth || x >= OLED_WIDTH) {
+    return;
+  }
+  const uint8_t srcStrips = height / 8;
+  for (uint8_t r = 0; r < srcStrips; r++) {
+    const uint8_t outStrip = (y / 8) + (2 * r);
+    if (outStrip + 1 >= (OLED_HEIGHT / 8)) {
+      return;
+    }
+    for (uint8_t xx = 0; xx < width; xx++) {
+      const int16_t outX = x + (2 * xx);
+      const uint8_t b    = ptr[xx + (r * width)];
+      const uint8_t lo   = doubleNibble(b);
+      const uint8_t hi   = doubleNibble(b >> 4);
+      for (uint8_t k = 0; k < 2; k++) {
+        const int16_t px = outX + k;
+        if (px >= 0 && px < OLED_WIDTH) {
+          stripPointers[outStrip][px]     = lo;
+          stripPointers[outStrip + 1][px] = hi;
+        }
+      }
+    }
+  }
+}
+#endif /* OLED_128x32 */
 
 // Draw an area, but y must be aligned on 0/8 offset
 // For data which has octets swapped in a 16-bit word.
