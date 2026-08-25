@@ -306,8 +306,14 @@
 #define MODEL_HAS_DCDC // No DC/DC, but the fast chop keeps the average current within the supply limit so PD can pick max voltage
 #endif                 /* S99 */
 
+#ifdef MODEL_S99
+// 80K usable flash, code region is 78K (see Makefile); logo + settings are the two 1K pages after it
+#define FLASH_LOGOADDR      (0x08000000 + (78 * 1024))
+#define SETTINGS_START_PAGE (0x08000000 + (79 * 1024))
+#else
 #define FLASH_LOGOADDR      (0x08000000 + (62 * 1024))
 #define SETTINGS_START_PAGE (0x08000000 + (63 * 1024))
+#endif
 
 // Defaults
 

@@ -107,8 +107,11 @@
 // Pin gets pulled high on movement
 #define MOVEMENT_Pin       GPIO_PIN_3
 #define MOVEMENT_GPIO_Port GPIOA
+// Passive piezo buzzer, driven with a software square wave from TIM3 (as the stock firmware does)
+#define BUZZER_Pin       GPIO_PIN_12
+#define BUZZER_GPIO_Port GPIOB
 
-#endif // MODEL_S60P
+#endif // MODEL_S99
 
 #ifdef MODEL_T55
 

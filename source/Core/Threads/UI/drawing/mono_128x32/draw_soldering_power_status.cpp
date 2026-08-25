@@ -4,45 +4,64 @@
 #ifdef OLED_128x32
 #ifdef OLED_128x32_HIRES_UI
 
-// Full height layout: [HUGE temp + deg symbol 96px][5 char info column: watts / volts / source+countdown / set temp]
-void ui_draw_soldering_power_status(bool boost_mode_on) {
-  const bool    leftHanded = OLED::getRotation();
-  const int16_t tempX      = leftHanded ? 32 : 0;
-  const int16_t infoX      = leftHanded ? 0 : 98;
+/*
+ * Data dense full height layout (right handed; the two blocks swap for left handed):
+ *
+ *   x 0..59                       x 60..127 (11 small chars)
+ *   +----------------------------+-----------------------------+
+ *   | 350°  (LARGE 16px)         | 45.3W 20.1V                 |  y 0
+ *   |                            | PD 41° 2.3A  src/handle/A   |  y 8
+ *   | [######    ] power bar     | 5.5Ω 11kHz   tip R / chop f |  y 16
+ *   |  320° 12s   set / sleep    | Max130W 63%  limit / duty   |  y 24
+ *   +----------------------------+-----------------------------+
+ */
+static void printX10Watts(uint32_t x10Watt) {
+  if (x10Watt > 999) {
+    // >= 100 W: drop the decimal so it still fits in 4 chars
+    OLED::printNumber(x10Watt / 10, 3, FontStyle::SMALL);
+  } else {
+    OLED::printNumber(x10Watt / 10, 2, FontStyle::SMALL);
+    OLED::print(SmallSymbolDot, FontStyle::SMALL);
+    OLED::printNumber(x10Watt % 10, 1, FontStyle::SMALL);
+  }
+  OLED::print(SmallSymbolWatts, FontStyle::SMALL);
+}
 
-  OLED::setCursor(tempX, 0);
-  ui_draw_tip_temperature(true, FontStyle::HUGE);
-
-  // Line 0: wattage
-  OLED::setCursor(infoX, 0);
-  {
-    uint32_t x10Watt = x10WattHistory.average();
-    if (x10Watt > 999) {
-      // If we exceed 99.9W we drop the decimal place to keep it all fitting
-      OLED::printNumber(x10Watt / 10, 3, FontStyle::SMALL);
-    } else {
-      OLED::printNumber(x10Watt / 10, 2, FontStyle::SMALL);
-      OLED::print(SmallSymbolDot, FontStyle::SMALL);
-      OLED::printNumber(x10Watt % 10, 1, FontStyle::SMALL);
+static void drawPowerBar(int16_t x, uint32_t x10Watt, int32_t x10Limit) {
+  // 48 px wide bar, 6 px tall, filled proportional to the power vs the currently effective limit
+  const uint8_t width = 46;
+  uint32_t      len   = 0;
+  if (x10Limit > 0) {
+    len = (x10Watt * width) / (uint32_t)x10Limit;
+    if (len > width) {
+      len = width;
     }
-    OLED::print(SmallSymbolWatts, FontStyle::SMALL);
   }
-  // Line 1: input voltage
-  OLED::setCursor(infoX, 8);
-  printVoltage();
-  OLED::print(SmallSymbolVolts, FontStyle::SMALL);
-
-  // Line 2: power source + countdown to sleep
-  OLED::setCursor(infoX, 16);
-  OLED::print(PowerSourceNames[getPowerSourceNumber()], FontStyle::SMALL, 2);
-#ifndef NO_SLEEP_MODE
-  if (!boost_mode_on && getSettingValue(SettingsOptions::Sensitivity) && getSettingValue(SettingsOptions::SleepTime)) {
-    printCountdownUntilSleep(getSleepTimeout());
+  // Frame: top & bottom rails
+  OLED::drawFilledRect(x, 16, x + width + 1, 16, false);
+  OLED::drawFilledRect(x, 22, x + width + 1, 22, false);
+  OLED::drawFilledRect(x, 16, x, 22, false);
+  OLED::drawFilledRect(x + width + 1, 16, x + width + 1, 22, false);
+  if (len) {
+    OLED::drawFilledRect(x + 1, 18, x + len, 20, false);
   }
-#endif
+}
 
-  // Line 3: set point, or boost indicator
-  OLED::setCursor(infoX, 24);
+void ui_draw_soldering_power_status(bool boost_mode_on) {
+  const bool     leftHanded = OLED::getRotation();
+  const int16_t  mainX      = leftHanded ? 68 : 0;
+  const int16_t  infoX      = leftHanded ? 0 : 60;
+  const uint32_t x10Watt    = x10WattHistory.average();
+  const uint32_t voltX10    = getInputVoltageX10(getSettingValue(SettingsOptions::VoltageDiv), 0);
+  const int32_t  x10Limit   = getX10WattageLimits();
+
+  // Main block: tip temperature, power bar, set point + sleep countdown
+  OLED::setCursor(mainX, 0);
+  ui_draw_tip_temperature(true, FontStyle::LARGE);
+
+  drawPowerBar(mainX, x10Watt, x10Limit);
+
+  OLED::setCursor(mainX, 24);
   if (boost_mode_on) {
     OLED::print(SmallSymbolPlus, FontStyle::SMALL);
     OLED::printNumber(getSettingValue(SettingsOptions::BoostTemp), 3, FontStyle::SMALL);
@@ -51,6 +70,65 @@ void ui_draw_soldering_power_status(bool boost_mode_on) {
     OLED::printNumber(getSettingValue(SettingsOptions::SolderingTemp), 3, FontStyle::SMALL);
   }
   OLED::printSymbolDeg(FontStyle::SMALL);
+#ifndef NO_SLEEP_MODE
+  if (!boost_mode_on && getSettingValue(SettingsOptions::Sensitivity) && getSettingValue(SettingsOptions::SleepTime)) {
+    OLED::setCursor(mainX + 32, 24);
+    printCountdownUntilSleep(getSleepTimeout());
+  }
+#endif
+
+  // Info block, line 0: wattage + input voltage
+  OLED::setCursor(infoX, 0);
+  printX10Watts(x10Watt);
+  OLED::print(SmallSymbolSpace, FontStyle::SMALL);
+  printVoltage();
+  OLED::print(SmallSymbolVolts, FontStyle::SMALL);
+
+  // Line 1: power source, handle temperature, tip current
+  OLED::setCursor(infoX, 8);
+  OLED::print(PowerSourceNames[getPowerSourceNumber()], FontStyle::SMALL, 2);
+  OLED::print(SmallSymbolSpace, FontStyle::SMALL);
+  OLED::printNumber(getHandleTemperature(0) / 10, 2, FontStyle::SMALL);
+  OLED::printSymbolDeg(FontStyle::SMALL);
+  OLED::print(SmallSymbolSpace, FontStyle::SMALL);
+  {
+    uint32_t ampsX10 = voltX10 ? (x10Watt * 10) / voltX10 : 0;
+    OLED::printNumber(ampsX10 / 10, 1, FontStyle::SMALL);
+    OLED::print(SmallSymbolDot, FontStyle::SMALL);
+    OLED::printNumber(ampsX10 % 10, 1, FontStyle::SMALL);
+    OLED::print(SmallSymbolAmps, FontStyle::SMALL);
+  }
+
+  // Line 2: cartridge resistance + chop frequency
+  OLED::setCursor(infoX, 16);
+  {
+    uint8_t tipRx10 = getTipResistanceX10();
+    OLED::printNumber(tipRx10 / 10, 1, FontStyle::SMALL);
+    OLED::print(SmallSymbolDot, FontStyle::SMALL);
+    OLED::printNumber(tipRx10 % 10, 1, FontStyle::SMALL);
+    OLED::print(SmallSymbolOhm, FontStyle::SMALL);
+  }
+#ifdef TIP_CURRENT_LIMIT_CHOP
+  OLED::print(SmallSymbolSpace, FontStyle::SMALL);
+  OLED::printNumber((getTipChopFrequencyHzX10() + 5000) / 10000, 2, FontStyle::SMALL);
+  OLED::print(SmallSymbolKiloHertz, FontStyle::SMALL);
+#endif
+
+  // Line 3: effective power limit (supply / user / hardware / handle derate) + chop duty when chopping
+  OLED::setCursor(infoX, 24);
+  OLED::print(SmallSymbolMax, FontStyle::SMALL);
+  OLED::printNumber(x10Limit > 0 ? (uint16_t)(x10Limit / 10) : 0, 3, FontStyle::SMALL);
+  OLED::print(SmallSymbolWatts, FontStyle::SMALL);
+#ifdef TIP_CURRENT_LIMIT_CHOP
+  {
+    uint16_t duty = getTipChopDutyX256Latched();
+    if (duty < 256) {
+      OLED::print(SmallSymbolSpace, FontStyle::SMALL);
+      OLED::printNumber((duty * 100) / 256, 2, FontStyle::SMALL);
+      OLED::print(SmallSymbolPercent, FontStyle::SMALL);
+    }
+  }
+#endif
 }
 
 #else /* scaled 96x16 layout */

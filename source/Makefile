@@ -146,6 +146,9 @@ ifeq ($(model), S60P)
 bootldr_size=0x5000
 DEVICE_DFU_ADDRESS=0x08005000
 else ifeq ($(model), S99)
+# The S99 MCU has more than 64K of flash: the stock firmware is linked up to 0x08013820 (~80K),
+# so 80K is proven usable: 78K for code, then the logo page (78K) and settings page (79K) (configuration.h).
+flash_size=78k
 bootldr_size=0x4c00
 DEVICE_DFU_ADDRESS=0x08004c00
 else 

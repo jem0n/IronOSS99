@@ -171,6 +171,8 @@ uint32_t getTipChopFrequencyHzX10() {
   return (8000000UL * 10) / ((uint32_t)(tipChopPrescalers[idx] + 1) * tipChopPeriodTicks);
 }
 
+uint16_t getTipChopDutyX256Latched() { return tipChopDutyX256; }
+
 uint16_t getTipChopDutyX256() {
   // Tip current at the present input voltage
   uint32_t voltageX10     = getInputVoltageX10(getSettingValue(SettingsOptions::VoltageDiv), 0);
@@ -247,6 +249,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // STM uses this for internal functions as a counter for timeouts
     HAL_IncTick();
   }
+#ifdef BUZZER_Pin
+  else if (htim->Instance == TIM3) {
+    // Buzzer tone: square wave on a plain GPIO
+    HAL_GPIO_TogglePin(BUZZER_GPIO_Port, BUZZER_Pin);
+  }
+#endif
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
@@ -256,7 +264,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
   }
 }
 
-#else  /* !TIP_CURRENT_LIMIT_CHOP : original always-chop scheme (S60 / S60P / T55) */
+#else /* !TIP_CURRENT_LIMIT_CHOP : original always-chop scheme (S60 / S60P / T55) */
 
 void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM) {
   PWMSafetyTimer = 20; // This is decremented in the handler for PWM so that the tip pwm is
@@ -285,6 +293,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // STM uses this for internal functions as a counter for timeouts
     HAL_IncTick();
   }
+#ifdef BUZZER_Pin
+  else if (htim->Instance == TIM3) {
+    // Buzzer tone: square wave on a plain GPIO
+    HAL_GPIO_TogglePin(BUZZER_GPIO_Port, BUZZER_Pin);
+  }
+#endif
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
@@ -382,7 +396,18 @@ uint8_t preStartChecksDone() { return 1; }
 uint16_t getTipThermalMass() { return TIP_THERMAL_MASS; }
 uint16_t getTipInertia() { return TIP_THERMAL_INERTIA; }
 
-void setBuzzer(bool on) {}
+void setBuzzer(bool on) {
+#ifdef BUZZER_Pin
+  if (on) {
+    HAL_TIM_Base_Start_IT(&htim3);
+  } else {
+    HAL_TIM_Base_Stop_IT(&htim3);
+    HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
+  }
+#else
+  (void)on;
+#endif
+}
 
 void showBootLogo(void) { BootLogo::handleShowingLogo((uint8_t *)FLASH_LOGOADDR); }
 

@@ -22,6 +22,7 @@ extern IWDG_HandleTypeDef hiwdg;
 
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3; // Buzzer tone generator
 void                     Setup_HAL();
 uint16_t                 getADCHandleTemp(uint8_t sample);
 uint16_t                 getADCVin(uint8_t sample);

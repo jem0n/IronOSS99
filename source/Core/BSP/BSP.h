@@ -43,6 +43,8 @@ void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM);
 uint16_t getTipChopDutyX256();
 // Currently selected chop frequency in Hz x10 (for display)
 uint32_t getTipChopFrequencyHzX10();
+// Last latched chop duty (x256) without recomputing it; 256 == not chopping (for display)
+uint16_t getTipChopDutyX256Latched();
 #endif
 // Returns the Handle temp in C, X10
 uint16_t getHandleTemperature(uint8_t sample);

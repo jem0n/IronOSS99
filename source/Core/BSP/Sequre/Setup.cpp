@@ -17,6 +17,7 @@ DMA_HandleTypeDef hdma_adc1;
 IWDG_HandleTypeDef hiwdg;
 TIM_HandleTypeDef  htim4; // Tip control
 TIM_HandleTypeDef  htim2; // ADC Scheduling
+TIM_HandleTypeDef  htim3; // Buzzer tone generator
 #define ADC_FILTER_LEN 4
 #define ADC_SAMPLES    16
 uint16_t ADCReadings[ADC_SAMPLES]; // Used to store the adc readings for the handle cold junction temp
@@ -26,6 +27,7 @@ static void SystemClock_Config(void);
 static void MX_ADC1_Init(void);
 static void MX_IWDG_Init(void);
 static void MX_TIM4_Init(void); // Tip control
+static void MX_TIM3_Init(void); // Buzzer
 static void MX_TIM2_Init(void); // ADC Scheduling
 static void MX_DMA_Init(void);
 static void MX_GPIO_Init(void);
@@ -46,6 +48,7 @@ void        Setup_HAL() {
 
   MX_TIM4_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
   MX_IWDG_Init();
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADCReadings, (ADC_SAMPLES)); // start DMA of normal readings
   HAL_ADCEx_InjectedStart(&hadc1);                                   // enable injected readings
@@ -311,6 +314,35 @@ static void MX_TIM4_Init(void) {
   HAL_TIM_PWM_Start(&htim4, PWM_Out_CHANNEL);
 }
 ///////////////////
+static void MX_TIM3_Init(void) {
+#ifdef BUZZER_Pin
+  /*
+   * The buzzer is a passive piezo on a plain GPIO, so we generate the tone in software:
+   * TIM3 update interrupts toggle the pin. 8 MHz / (7+1) = 1 MHz, / (184+1) = 5405 Hz toggles -> ~2.7 kHz tone.
+   * The timer is only running while the buzzer is on (see setBuzzer()).
+   */
+  htim3.Instance               = TIM3;
+  htim3.Init.Prescaler         = 7;
+  htim3.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim3.Init.Period            = 184;
+  htim3.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.RepetitionCounter = 0;
+  HAL_TIM_Base_Init(&htim3);
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitStruct.Pin   = BUZZER_Pin;
+  GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull  = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(BUZZER_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
+
+  HAL_NVIC_SetPriority(TIM3_IRQn, 14, 0);
+  HAL_NVIC_EnableIRQ(TIM3_IRQn);
+#endif
+}
+
 static void MX_TIM2_Init(void) {
   /*
    * We use the channel 1 to trigger the ADC at end of PWM period
