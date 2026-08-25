@@ -6,8 +6,9 @@ TRANSLATION_DIR="../Translations"
 # AVAILABLE_LANGUAGES will be calculating according to json files in $TRANSLATION_DIR
 AVAILABLE_LANGUAGES=()
 BUILD_LANGUAGES=()
-# Languages that do not fit in the S99's flash (see the build loop below)
-S99_EXCLUDED_LANGUAGES=(JA_JP YUE_HK ZH_CN ZH_TW)
+# Models whose application flash is too small for the CJK fonts (see the build loop below)
+FLASH_LIMITED_MODELS=(S60P S99)
+FLASH_LIMITED_EXCLUDED_LANGUAGES=(JA_JP YUE_HK ZH_CN ZH_TW)
 AVAILABLE_MODELS=("TS100" "TS80" "TS80P" "Pinecil" "MHP30" "Pinecilv2" "S60" "S60P" "T55" "S99" "TS101")
 BUILD_MODELS=()
 OPTIONS=()
@@ -187,12 +188,12 @@ if [ ${#BUILD_LANGUAGES[@]} -gt 0 ] && [ ${#BUILD_MODELS[@]} -gt 0 ]; then
 
     for model in "${BUILD_MODELS[@]}"; do
         MODEL_LANGUAGES=("${BUILD_LANGUAGES[@]}")
-        # The S99 only has 43K of application flash left after its larger bootloader; the CJK
-        # fonts do not fit alongside the full S99 feature set, so those languages are skipped.
-        if [ "$model" = "S99" ]; then
+        # The S60P and S99 only have 42K/43K of application flash left after their larger
+        # bootloaders; the CJK fonts do not fit there, so those languages are skipped.
+        if isInArray "$model" "${FLASH_LIMITED_MODELS[@]}"; then
             MODEL_LANGUAGES=()
             for lang in "${BUILD_LANGUAGES[@]}"; do
-                if isInArray "$lang" "${S99_EXCLUDED_LANGUAGES[@]}"; then
+                if isInArray "$lang" "${FLASH_LIMITED_EXCLUDED_LANGUAGES[@]}"; then
                     echo "Skipping $lang for $model (does not fit in flash)"
                 else
                     MODEL_LANGUAGES+=("$lang")
