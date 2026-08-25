@@ -24,8 +24,7 @@ void ui_draw_soldering_basic_status(bool boostModeOn) {
   ui_draw_power_source_icon();
 }
 
-#else /* scaled 96x16 layout */
-
+#else  /* scaled 96x16 layout */
 
 void ui_draw_soldering_basic_status(bool boostModeOn) {
   OLED::setCursor(0, 0);

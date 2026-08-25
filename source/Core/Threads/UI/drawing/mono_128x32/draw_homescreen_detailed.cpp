@@ -42,8 +42,7 @@ void ui_draw_homescreen_detailed(TemperatureType_t tipTemp) {
   OLED::print(PowerSourceNames[getPowerSourceNumber()], FontStyle::SMALL, 2);
 }
 
-#else /* scaled 96x16 layout */
-
+#else  /* scaled 96x16 layout */
 
 extern uint8_t buttonAF[sizeof(buttonA)];
 extern uint8_t buttonBF[sizeof(buttonB)];

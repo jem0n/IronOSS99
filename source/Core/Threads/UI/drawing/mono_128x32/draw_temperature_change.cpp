@@ -16,7 +16,7 @@ void ui_draw_temperature_change(void) {
   OLED::print((left != reverse) ? LargeSymbolPlus : LargeSymbolMinus, FontStyle::LARGE);
 }
 
-#else /* scaled 96x16 layout */
+#else  /* scaled 96x16 layout */
 
 void ui_draw_temperature_change(void) {
 

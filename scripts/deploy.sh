@@ -82,7 +82,9 @@ docs_history()
 	ver_git="$(git tag -l | sort | grep -e "^v" | grep -v "rc" | tail -1)"
 	echo "Latest release tag: ${ver_git}"
 	ret=0
-	if [ "${ver_md}" != "${ver_git}" ]; then
+	if [ -z "${ver_git}" ]; then
+		echo "No release tag found (fork without upstream tags?), skipping changelog check."
+	elif [ "${ver_md}" != "${ver_git}" ]; then
 		ret=1
 		echo "It seems there is no changelog information for ${ver_git} in ${md} yet."
 		echo "Please, update changelog information in ${md}."
@@ -96,8 +98,12 @@ docs_links()
 	ver_git="$(git tag -l | sort | grep -e "^v" | grep -v "rc" | tail -1)"
 	md="README.md"
 	test -f "${md}" || (echo "deploy.sh: docs_links: ERROR with the project directory structure!" && exit 1)
-	ver_md="$(grep -c "${ver_git}" "${md}")"
 	ret=0
+	if [ -z "${ver_git}" ]; then
+		echo "No release tag found (fork without upstream tags?), skipping release links check."
+		return "${ret}"
+	fi;
+	ver_md="$(grep -c "${ver_git}" "${md}")"
 	if [ "${ver_md}" -eq 0 ]; then
 		ret=1
 		echo "Please, update mention & links in ${md} inside Builds section for release builds with version ${ver_git}."

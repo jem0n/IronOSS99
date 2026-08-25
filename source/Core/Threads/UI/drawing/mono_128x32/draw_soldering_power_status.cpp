@@ -55,7 +55,6 @@ void ui_draw_soldering_power_status(bool boost_mode_on) {
 
 #else /* scaled 96x16 layout */
 
-
 void ui_draw_soldering_power_status(bool boost_mode_on) {
   if (OLED::getRotation()) {
     OLED::setCursor(50, 0);

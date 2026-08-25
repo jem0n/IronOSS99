@@ -71,7 +71,7 @@ PD negotiation timeout in 100ms steps for compatibility with some QC chargers
 
 ### Setting: PD Mode
 
-Adjusts how the USB-PD Logic selects the voltage. No Dynamic disables EPR & PPS protocols, Safe mode does not use padding resistance (will select a slightly lower voltage).
+No Dynamic disables EPR & PPS, Safe mode does not use padding resistance
 
 On device help text:
 
@@ -471,3 +471,11 @@ For manually selecting the type of tip fitted
 On device help text:
 
 Select the tip type fitted
+
+### Setting: Chop freq (kHz)
+
+Frequency in kHz of the fast output chopping used to keep the average tip current within the supply limit. Lower values run the MOSFET cooler but need a supply that tolerates longer current pulses.
+
+On device help text:
+
+Fast output chopping frequency for supply current limiting. Lower = cooler MOSFET, but the supply must tolerate longer current pulses.

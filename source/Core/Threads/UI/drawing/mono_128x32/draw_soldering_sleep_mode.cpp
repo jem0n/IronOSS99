@@ -39,7 +39,7 @@ void ui_draw_soldering_basic_sleep(TemperatureType_t tipTemp) {
   OLED::refresh();
 }
 
-#else /* scaled 96x16 layout */
+#else  /* scaled 96x16 layout */
 
 void ui_draw_soldering_detailed_sleep(TemperatureType_t tipTemp) {
 

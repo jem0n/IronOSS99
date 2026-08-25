@@ -28,40 +28,72 @@ void resetWatchdog() { HAL_IWDG_Refresh(&hiwdg); }
 // Stored as ADCReading,Temp in degC
 static const uint16_t NTCHandleLookup[] = {
     // ADC Reading , Temp in C
-    23931, 0,  //
-    23210, 2,  //
-    22466, 4,  //
-    21703, 6,  //
-    20924, 8,  //
-    20135, 10, //
-    19338, 12, //
-    18538, 14, //
-    17738, 16, //
-    16943, 18, //
-    16156, 20, //
-    15381, 22, //
-    14621, 24, //
-    13878, 26, //
-    13155, 28, //
-    12455, 30, //
-    11778, 32, //
-    11126, 34, //
-    10501, 36, //
-    9902,  38, //
-    9330,  40, //
-    8786,  42, //
-    8269,  44, //
+    23931,
+    0, //
+    23210,
+    2, //
+    22466,
+    4, //
+    21703,
+    6, //
+    20924,
+    8, //
+    20135,
+    10, //
+    19338,
+    12, //
+    18538,
+    14, //
+    17738,
+    16, //
+    16943,
+    18, //
+    16156,
+    20, //
+    15381,
+    22, //
+    14621,
+    24, //
+    13878,
+    26, //
+    13155,
+    28, //
+    12455,
+    30, //
+    11778,
+    32, //
+    11126,
+    34, //
+    10501,
+    36, //
+    9902,
+    38, //
+    9330,
+    40, //
+    8786,
+    42, //
+    8269,
+    44, //
     // Extended beyond the measured points using the same NTC model (10K, B~4000, reading ~= 32767*R/(R+13K))
     // so the handle temperature is usable for CJC and for derating when the handle / MOSFET area gets hot.
-    7301,  48, //
-    6437,  52, //
-    5670,  56, //
-    4990,  60, //
-    4394,  64, //
-    3871,  68, //
-    3412,  72, //
-    3011,  76, //
-    2660,  80, //
+    7301,
+    48, //
+    6437,
+    52, //
+    5670,
+    56, //
+    4990,
+    60, //
+    4394,
+    64, //
+    3871,
+    68, //
+    3412,
+    72, //
+    3011,
+    76, //
+    2660,
+    80, //
 };
 
 uint16_t getHandleTemperature(uint8_t sample) {
@@ -115,10 +147,10 @@ static void switchToFastPWM(void) {
  *  Hard switching 8 A at 11 kHz through the weak gate drive is what overheats the MOSFET, so this keeps the
  *  number of switching events proportional to the delivered power, and to zero for supplies that don't need it.
  */
-static const uint16_t tipChopPeriodTicks       = 64 + 1;                 // TIM4 ARR + 1
-static const uint16_t tipChopPrescalers[]      = {10, 20, 40, 80};       // 8 MHz / (PSC+1) / 65 -> 11.2k, 5.9k, 3.0k, 1.5k Hz
-static volatile uint16_t tipChopCompare        = tipChopPeriodTicks;     // TIM4 CCR3 while the envelope is on; ARR+1 == solid on
-static uint16_t          tipChopDutyX256       = 256;
+static const uint16_t    tipChopPeriodTicks  = 64 + 1;             // TIM4 ARR + 1
+static const uint16_t    tipChopPrescalers[] = {10, 20, 40, 80};   // 8 MHz / (PSC+1) / 65 -> 11.2k, 5.9k, 3.0k, 1.5k Hz
+static volatile uint16_t tipChopCompare      = tipChopPeriodTicks; // TIM4 CCR3 while the envelope is on; ARR+1 == solid on
+static uint16_t          tipChopDutyX256     = 256;
 
 static void applyTipChopPrescaler(void) {
   uint8_t idx = getSettingValue(SettingsOptions::TipChopFrequency);
@@ -141,8 +173,8 @@ uint32_t getTipChopFrequencyHzX10() {
 
 uint16_t getTipChopDutyX256() {
   // Tip current at the present input voltage
-  uint32_t voltageX10   = getInputVoltageX10(getSettingValue(SettingsOptions::VoltageDiv), 0);
-  uint32_t tipRx10      = getTipResistanceX10();
+  uint32_t voltageX10     = getInputVoltageX10(getSettingValue(SettingsOptions::VoltageDiv), 0);
+  uint32_t tipRx10        = getTipResistanceX10();
   uint32_t tipCurrentx100 = 0;
   if (tipRx10 > 0 && voltageX10 > 0) {
     tipCurrentx100 = (voltageX10 * 100) / tipRx10;
@@ -224,7 +256,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
   }
 }
 
-#else /* !TIP_CURRENT_LIMIT_CHOP : original always-chop scheme (S60 / S60P / T55) */
+#else  /* !TIP_CURRENT_LIMIT_CHOP : original always-chop scheme (S60 / S60P / T55) */
 
 void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM) {
   PWMSafetyTimer = 20; // This is decremented in the handler for PWM so that the tip pwm is
