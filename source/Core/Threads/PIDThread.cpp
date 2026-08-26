@@ -82,6 +82,14 @@ void startPIDTask(void const *argument __unused) {
       TemperatureType_t currentTipTempInC = TipThermoModel::getTipInC(true);
 
       PIDTempTarget = currentTempTargetDegC;
+#ifdef POW_DC
+      // Never drive the tip below the DC minimum input voltage (9 V, or the battery cell cut-off). The soldering
+      // mode exits on undervoltage as well, but only after its 2 s ADC settling delay; a 5 V USB host port would
+      // already have been overloaded and dropped VBUS by then.
+      if (PIDTempTarget > 0 && getIsPoweredByDCIN() && getInputVoltageX10(getSettingValue(SettingsOptions::VoltageDiv), 0) < lookupVoltageLevel()) {
+        PIDTempTarget = 0;
+      }
+#endif
       if (PIDTempTarget > 0) {
         // Cap the max set point to 450C
         if (PIDTempTarget > 450) {
