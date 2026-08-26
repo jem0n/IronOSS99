@@ -52,8 +52,7 @@ bool i2c_probe(uint8_t addr) {
 }
 
 uint8_t FS2711::detect_i2c_bus_num() {
-  I2CBB2::probe(88);
-  I2CBB2::probe(89);
+  // Newer boards (S99 v1.5, S60P v1.2) have the FS2711 on its own bus (bus 2); older ones share bus 1 with the OLED.
   if (I2CBB2::probe(FS2711_ADDR)) {
     selected_i2c_port = 2;
   } else {
