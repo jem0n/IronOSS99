@@ -101,18 +101,16 @@ static void switchToFastPWM(void) {
 
 #ifdef TIP_CURRENT_LIMIT_CHOP
 /*
- * Output stage drive for irons without an inductor (S99):
+ * The S99 has no inductor, so tip current can only be limited by chopping the output.
  *
- *  TIM2 (~20 Hz) is the power envelope: the tip is driven for pendingPWM of the powerPWM ticks, then the
- *  output is forced off for the holdoff + ADC measurement window. This is what the PID controls, exactly
- *  like the TS100 / Pinecil.
+ * TIM2 (~20 Hz) is the normal PWM envelope that the PID controls: on for pendingPWM ticks,
+ * then off for the holdoff + ADC window. Same as every other iron.
  *
- *  TIM4 (fast, user selectable frequency) only chops *inside* the envelope on-time, and only at the duty
- *  needed to keep the average tip current within what the supply can deliver (I_limit / I_tip). If the supply
- *  can deliver the full tip current, TIM4 sits at 100 % and the MOSFET only switches at 20 Hz.
+ * TIM4 runs the fast chop, but only while the envelope is on, and only at the duty that
+ * keeps the average current under the supply limit (I_limit / I_tip). If the supply can
+ * handle the full tip current, TIM4 stays at 100% and the FET only switches at 20 Hz.
  *
- *  Hard switching 8 A at 11 kHz through the weak gate drive is what overheats the MOSFET, so this keeps the
- *  number of switching events proportional to the delivered power, and to zero for supplies that don't need it.
+ * Switching 8 A at 11 kHz all the time is what overheated the FET before.
  */
 static const uint16_t    tipChopPeriodTicks  = 64 + 1;             // TIM4 ARR + 1
 static const uint16_t    tipChopPrescalers[] = {10, 20, 40, 80};   // 8 MHz / (PSC+1) / 65 -> 11.2k, 5.9k, 3.0k, 1.5k Hz
