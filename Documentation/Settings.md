@@ -71,7 +71,7 @@ PD negotiation timeout in 100ms steps for compatibility with some QC chargers
 
 ### Setting: PD Mode
 
-No Dynamic disables EPR & PPS, Safe mode does not use padding resistance
+Adjusts how the USB-PD Logic selects the voltage. No Dynamic disables EPR & PPS protocols, Safe mode does not use padding resistance (will select a slightly lower voltage).
 
 On device help text:
 
