@@ -22,7 +22,7 @@ void ui_draw_soldering_basic_status(bool boostModeOn) {
   OLED::setCursor(tempX, 4); // y=4 centres the 24px digits
   ui_draw_tip_temperature(true, FontStyle::LARGE);
 
-  OLED::setCursor(infoX, 4);
+  OLED::setCursor(infoX, 0); // info rows on strip boundaries: unaligned y would clobber the neighbouring row
   {
     uint32_t voltX10 = getInputVoltageX10(getSettingValue(SettingsOptions::VoltageDiv), 0);
     OLED::printNumber(voltX10 / 10, 2, FontStyle::TINY);
@@ -30,7 +30,7 @@ void ui_draw_soldering_basic_status(bool boostModeOn) {
     OLED::printNumber(voltX10 % 10, 1, FontStyle::TINY);
     OLED::print(SmallSymbolVolts, FontStyle::TINY);
   }
-  OLED::setCursor(infoX, 12);
+  OLED::setCursor(infoX, 8);
 #ifdef POW_DC
   if (getIsPoweredByDCIN() && getSettingValue(SettingsOptions::MinDCVoltageCells)) {
     ui_draw_power_source_icon(); // battery gauge
@@ -39,7 +39,7 @@ void ui_draw_soldering_basic_status(bool boostModeOn) {
   {
     OLED::print(PowerSourceNames[getPowerSourceNumber()], FontStyle::TINY, 2);
   }
-  OLED::setCursor(infoX, 20);
+  OLED::setCursor(infoX, 16);
   OLED::print(SmallSymbolSpace, FontStyle::TINY);
   OLED::printNumber(getSettingValue(boostModeOn ? SettingsOptions::BoostTemp : SettingsOptions::SolderingTemp), 3, FontStyle::TINY);
   OLED::printSymbolDeg(FontStyle::TINY);
