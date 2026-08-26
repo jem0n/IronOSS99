@@ -147,7 +147,9 @@ def get_constants() -> List[Tuple[str, str]]:
         ("SmallSymbolMax", "Max"),
         ("SmallSymbolPercent", "%"),
         ("LargeSymbolDC", "DC"),
+        ("SmallSymbolDC", "DC"),
         ("LargeSymbolCellCount", "S"),
+        ("SmallSymbolCellCount", "S"),
         ("SmallSymbolVersionNumber", read_version()),
         ("SmallSymbolPDDebug", "PD Debug"),
         ("SmallSymbolState", "State"),
@@ -247,6 +249,15 @@ def description_uses_small_font(msg: str) -> bool:
     return all(c in small_font_chars() for c in stripped)
 
 
+def value_uses_small_font(msg: str) -> bool:
+    """Menu values and single characters: on 128x32 panels the settings menu prints
+    them in the 8x16 small font (see VALUE_FONT in settingsGUI.cpp) whenever every
+    glyph exists there; otherwise (96x16 panels, CJK) the usual small/large rule."""
+    if DESCRIPTIONS_USE_SMALL_FONT and description_uses_small_font(msg):
+        return True
+    return test_is_small_font(msg)
+
+
 def get_letter_counts(defs: dict, lang: dict, build_version: str) -> Dict:
     """From the source definitions, language file and build version; calculates the ranked symbol list
 
@@ -277,7 +288,7 @@ def get_letter_counts(defs: dict, lang: dict, build_version: str) -> Dict:
     for mod in defs["characters"]:
         eid = mod["id"]
         msg = obj[eid]
-        if test_is_small_font(msg):
+        if value_uses_small_font(msg):
             small_font_messages.append(msg)
         else:
             big_font_messages.append(msg)
@@ -304,7 +315,7 @@ def get_letter_counts(defs: dict, lang: dict, build_version: str) -> Dict:
     for mod in defs["menuValues"]:
         eid = mod["id"]
         msg = obj[eid]["displayText"]
-        if test_is_small_font(msg):
+        if value_uses_small_font(msg):
             small_font_messages.append(msg)
         else:
             big_font_messages.append(msg)
@@ -1374,8 +1385,12 @@ def get_translation_strings_and_indices_text(
     for index, record in enumerate(defs["menuValues"]):
         lang_data = lang["menuValues"][record["id"]]
         # Add to translations the menu text and the description
+        use_small = value_uses_small_font(lang_data["displayText"])
         encode_string_and_add(
-            lang_data["displayText"], "menuValues" + record["id"] + "displayText"
+            lang_data["displayText"],
+            "menuValues" + record["id"] + "displayText",
+            force_large_text=not use_small,
+            force_small_text=use_small,
         )
 
     for index, record in enumerate(defs["menuGroups"]):
@@ -1402,7 +1417,11 @@ def get_translation_strings_and_indices_text(
     for index, record in enumerate(defs["characters"]):
         lang_data = lang["characters"][record["id"]]
         # Add to translations the menu text and the description
-        encode_string_and_add(lang_data, "characters" + record["id"] + "Message", True)
+        encode_string_and_add(
+            lang_data,
+            "characters" + record["id"] + "Message",
+            force_small_text=value_uses_small_font(lang_data),
+        )
 
     # ----- Write the string table:
     offset = 0

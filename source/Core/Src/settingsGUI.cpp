@@ -100,6 +100,7 @@ static void displayCoolingBlinkEnabled(void);
 static void setResetSettings(void);
 static void setCalibrate(void);
 static void displayCalibrate(void);
+
 static void setCalibrateVIN(void);
 static void displayTempChangeShortStep(void);
 static void displayTempChangeLongStep(void);
@@ -125,6 +126,26 @@ static bool showHallEffect(void);
 static void displaySolderingTipType(void);
 static bool showSolderingTipType(void);
 #endif /* TIP_TYPE_SUPPORT */
+
+// Menu values: on 128x32 panels the 8x16 small font keeps them next to the two-line names,
+// on 96x16 panels the 12x16 large font is used as before.
+#ifdef OLED_128x32
+#define VALUE_FONT        FontStyle::SMALL
+#define VALUE_SYMBOL(sym) SmallSymbol##sym
+#define VALUE_Y           8
+#else
+#define VALUE_FONT        FontStyle::LARGE
+#define VALUE_SYMBOL(sym) LargeSymbol##sym
+#define VALUE_Y           0
+#endif
+// Translated value strings: ones encoded for the large font start with \x01 (CJK, 96x16)
+static void printValue(const char *str) {
+  if (str[0] == '\x01') {
+    OLED::print(str + 1, FontStyle::LARGE);
+  } else {
+    OLED::print(str, VALUE_FONT);
+  }
+}
 
 // Menu functions
 
@@ -521,19 +542,19 @@ static int userConfirmation(const char *message) {
 
 static void displayInputVRange(void) {
   if (getSettingValue(SettingsOptions::MinDCVoltageCells)) {
-    OLED::printNumber(2 + getSettingValue(SettingsOptions::MinDCVoltageCells), 1, FontStyle::LARGE);
-    OLED::print(LargeSymbolCellCount, FontStyle::LARGE);
+    OLED::printNumber(2 + getSettingValue(SettingsOptions::MinDCVoltageCells), 1, VALUE_FONT);
+    OLED::print(VALUE_SYMBOL(CellCount), VALUE_FONT);
   } else {
-    OLED::print(LargeSymbolDC, FontStyle::LARGE);
+    OLED::print(VALUE_SYMBOL(DC), VALUE_FONT);
   }
 }
 
 static bool showInputVOptions(void) { return getSettingValue(SettingsOptions::MinDCVoltageCells) > 0; }
 
 static void displayInputMinVRange(void) {
-  OLED::printNumber(getSettingValue(SettingsOptions::MinVoltageCells) / 10, 1, FontStyle::LARGE);
-  OLED::print(LargeSymbolDot, FontStyle::LARGE);
-  OLED::printNumber(getSettingValue(SettingsOptions::MinVoltageCells) % 10, 1, FontStyle::LARGE);
+  OLED::printNumber(getSettingValue(SettingsOptions::MinVoltageCells) / 10, 1, VALUE_FONT);
+  OLED::print(VALUE_SYMBOL(Dot), VALUE_FONT);
+  OLED::printNumber(getSettingValue(SettingsOptions::MinVoltageCells) % 10, 1, VALUE_FONT);
 }
 
 #endif /* POW_DC */
@@ -544,9 +565,9 @@ static void displayQCInputV(void) {
   // These are only used in QC modes
   // Allows setting the voltage negotiated for QC
   auto voltage = getSettingValue(SettingsOptions::QCIdealVoltage);
-  OLED::printNumber(voltage / 10, 2, FontStyle::LARGE);
-  OLED::print(LargeSymbolDot, FontStyle::LARGE);
-  OLED::printNumber(voltage % 10, 1, FontStyle::LARGE);
+  OLED::printNumber(voltage / 10, 2, VALUE_FONT);
+  OLED::print(VALUE_SYMBOL(Dot), VALUE_FONT);
+  OLED::printNumber(voltage % 10, 1, VALUE_FONT);
 }
 
 #endif /* POW_QC */
@@ -555,7 +576,7 @@ static void displayQCInputV(void) {
 
 static void displayPDNegTimeout(void) {
   auto value = getSettingValue(SettingsOptions::PDNegTimeout);
-  value ? OLED::printNumber(value, 2, FontStyle::LARGE) : OLED::drawUnavailableIcon();
+  value ? OLED::printNumber(value, 2, VALUE_FONT) : OLED::drawUnavailableIcon();
 }
 
 static void displayUSBPDMode(void) {
@@ -614,7 +635,7 @@ static void setBoostTemp(void) {
 
 static void displayBoostTemp(void) {
   if (getSettingValue(SettingsOptions::BoostTemp)) {
-    OLED::printNumber(getSettingValue(SettingsOptions::BoostTemp), 3, FontStyle::LARGE);
+    OLED::printNumber(getSettingValue(SettingsOptions::BoostTemp), 3, VALUE_FONT);
   } else {
     OLED::drawUnavailableIcon();
   }
@@ -626,13 +647,13 @@ static void displayAutomaticStartMode(void) {
     OLED::drawUnavailableIcon();
     break;
   case autoStartMode_t::SOLDER:
-    OLED::print(translatedString(Tr->SettingStartSolderingChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingStartSolderingChar));
     break;
   case autoStartMode_t::SLEEP:
-    OLED::print(translatedString(Tr->SettingStartSleepChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingStartSleepChar));
     break;
   case autoStartMode_t::ZERO:
-    OLED::print(translatedString(Tr->SettingStartSleepOffChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingStartSleepOffChar));
     break;
   default:
     OLED::drawUnavailableIcon();
@@ -640,9 +661,9 @@ static void displayAutomaticStartMode(void) {
   }
 }
 
-static void displayTempChangeShortStep(void) { OLED::printNumber(getSettingValue(SettingsOptions::TempChangeShortStep), 2, FontStyle::LARGE); }
+static void displayTempChangeShortStep(void) { OLED::printNumber(getSettingValue(SettingsOptions::TempChangeShortStep), 2, VALUE_FONT); }
 
-static void displayTempChangeLongStep(void) { OLED::printNumber(getSettingValue(SettingsOptions::TempChangeLongStep), 2, FontStyle::LARGE); }
+static void displayTempChangeLongStep(void) { OLED::printNumber(getSettingValue(SettingsOptions::TempChangeLongStep), 2, VALUE_FONT); }
 
 static void displayLockingMode(void) {
   switch (getSettingValue(SettingsOptions::LockingMode)) {
@@ -650,10 +671,10 @@ static void displayLockingMode(void) {
     OLED::drawUnavailableIcon();
     break;
   case lockingMode_t::BOOST:
-    OLED::print(translatedString(Tr->SettingLockBoostChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingLockBoostChar));
     break;
   case lockingMode_t::FULL:
-    OLED::print(translatedString(Tr->SettingLockFullChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingLockFullChar));
     break;
   default:
     OLED::drawUnavailableIcon();
@@ -663,7 +684,7 @@ static void displayLockingMode(void) {
 
 #ifdef PROFILE_SUPPORT
 
-static void displayProfilePhases(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhases), 1, FontStyle::LARGE); }
+static void displayProfilePhases(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhases), 1, VALUE_FONT); }
 
 static void setProfileTemp(const enum SettingsOptions option) {
   // If in C, 5 deg, if in F 10 deg
@@ -689,19 +710,19 @@ static void setProfilePhase3Temp(void) { return setProfileTemp(SettingsOptions::
 static void setProfilePhase4Temp(void) { return setProfileTemp(SettingsOptions::ProfilePhase4Temp); }
 static void setProfilePhase5Temp(void) { return setProfileTemp(SettingsOptions::ProfilePhase5Temp); }
 
-static void displayProfilePreheatTemp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePreheatTemp), 3, FontStyle::LARGE); }
-static void displayProfilePhase1Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase1Temp), 3, FontStyle::LARGE); }
-static void displayProfilePhase2Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase2Temp), 3, FontStyle::LARGE); }
-static void displayProfilePhase3Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase3Temp), 3, FontStyle::LARGE); }
-static void displayProfilePhase4Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase4Temp), 3, FontStyle::LARGE); }
-static void displayProfilePhase5Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase5Temp), 3, FontStyle::LARGE); }
-static void displayProfilePreheatSpeed(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePreheatSpeed), 2, FontStyle::LARGE); }
-static void displayProfileCooldownSpeed(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfileCooldownSpeed), 2, FontStyle::LARGE); }
-static void displayProfilePhase1Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase1Duration), 3, FontStyle::LARGE); }
-static void displayProfilePhase2Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase2Duration), 3, FontStyle::LARGE); }
-static void displayProfilePhase3Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase3Duration), 3, FontStyle::LARGE); }
-static void displayProfilePhase4Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase4Duration), 3, FontStyle::LARGE); }
-static void displayProfilePhase5Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase5Duration), 3, FontStyle::LARGE); }
+static void displayProfilePreheatTemp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePreheatTemp), 3, VALUE_FONT); }
+static void displayProfilePhase1Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase1Temp), 3, VALUE_FONT); }
+static void displayProfilePhase2Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase2Temp), 3, VALUE_FONT); }
+static void displayProfilePhase3Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase3Temp), 3, VALUE_FONT); }
+static void displayProfilePhase4Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase4Temp), 3, VALUE_FONT); }
+static void displayProfilePhase5Temp(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase5Temp), 3, VALUE_FONT); }
+static void displayProfilePreheatSpeed(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePreheatSpeed), 2, VALUE_FONT); }
+static void displayProfileCooldownSpeed(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfileCooldownSpeed), 2, VALUE_FONT); }
+static void displayProfilePhase1Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase1Duration), 3, VALUE_FONT); }
+static void displayProfilePhase2Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase2Duration), 3, VALUE_FONT); }
+static void displayProfilePhase3Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase3Duration), 3, VALUE_FONT); }
+static void displayProfilePhase4Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase4Duration), 3, VALUE_FONT); }
+static void displayProfilePhase5Duration(void) { OLED::printNumber(getSettingValue(SettingsOptions::ProfilePhase5Duration), 3, VALUE_FONT); }
 
 static bool showProfileOptions(void) { return getSettingValue(SettingsOptions::ProfilePhases); }
 static bool showProfilePhase2Options(void) { return getSettingValue(SettingsOptions::ProfilePhases) >= 2; }
@@ -713,7 +734,7 @@ static bool showProfilePhase5Options(void) { return getSettingValue(SettingsOpti
 
 static void displaySensitivity(void) {
   if (getSettingValue(SettingsOptions::Sensitivity)) {
-    OLED::printNumber(getSettingValue(SettingsOptions::Sensitivity), 1, FontStyle::LARGE, false);
+    OLED::printNumber(getSettingValue(SettingsOptions::Sensitivity), 1, VALUE_FONT, false);
   } else {
     OLED::drawUnavailableIcon();
   }
@@ -739,17 +760,17 @@ static void setSleepTemp(void) {
   setSettingValue(SettingsOptions::SleepTemp, temp);
 }
 
-static void displaySleepTemp(void) { OLED::printNumber(getSettingValue(SettingsOptions::SleepTemp), 3, FontStyle::LARGE); }
+static void displaySleepTemp(void) { OLED::printNumber(getSettingValue(SettingsOptions::SleepTemp), 3, VALUE_FONT); }
 
 static void displaySleepTime(void) {
   if (getSettingValue(SettingsOptions::SleepTime) == 0) {
     OLED::drawUnavailableIcon();
   } else if (getSettingValue(SettingsOptions::SleepTime) < 6) {
-    OLED::printNumber(getSettingValue(SettingsOptions::SleepTime) * 10, 2, FontStyle::LARGE);
-    OLED::print(LargeSymbolSeconds, FontStyle::LARGE);
+    OLED::printNumber(getSettingValue(SettingsOptions::SleepTime) * 10, 2, VALUE_FONT);
+    OLED::print(VALUE_SYMBOL(Seconds), VALUE_FONT);
   } else {
-    OLED::printNumber(getSettingValue(SettingsOptions::SleepTime) - 5, 2, FontStyle::LARGE);
-    OLED::print(LargeSymbolMinutes, FontStyle::LARGE);
+    OLED::printNumber(getSettingValue(SettingsOptions::SleepTime) - 5, 2, VALUE_FONT);
+    OLED::print(VALUE_SYMBOL(Minutes), VALUE_FONT);
   }
 }
 
@@ -759,15 +780,15 @@ static void displayShutdownTime(void) {
   if (getSettingValue(SettingsOptions::ShutdownTime) == 0) {
     OLED::drawUnavailableIcon();
   } else {
-    OLED::printNumber(getSettingValue(SettingsOptions::ShutdownTime), 2, FontStyle::LARGE);
-    OLED::print(LargeSymbolMinutes, FontStyle::LARGE);
+    OLED::printNumber(getSettingValue(SettingsOptions::ShutdownTime), 2, VALUE_FONT);
+    OLED::print(VALUE_SYMBOL(Minutes), VALUE_FONT);
   }
 }
 
 #ifdef HALL_SENSOR
 static void displayHallEffect(void) {
   if (getSettingValue(SettingsOptions::HallEffectSensitivity)) {
-    OLED::printNumber(getSettingValue(SettingsOptions::HallEffectSensitivity), 1, FontStyle::LARGE, false);
+    OLED::printNumber(getSettingValue(SettingsOptions::HallEffectSensitivity), 1, VALUE_FONT, false);
   } else {
     OLED::drawUnavailableIcon();
   }
@@ -775,12 +796,12 @@ static void displayHallEffect(void) {
 static bool showHallEffect(void) { return getHallSensorFitted(); }
 static void displayHallEffectSleepTime(void) {
   if (getSettingValue(SettingsOptions::HallEffectSleepTime)) {
-    OLED::printNumber(getSettingValue(SettingsOptions::HallEffectSleepTime) * 5, 2, FontStyle::LARGE, false);
+    OLED::printNumber(getSettingValue(SettingsOptions::HallEffectSleepTime) * 5, 2, VALUE_FONT, false);
   } else {
     // When sleep time is set to zero, we sleep for 1 second anyways. This is the default.
-    OLED::printNumber(1, 2, FontStyle::LARGE, false);
+    OLED::printNumber(1, 2, VALUE_FONT, false);
   }
-  OLED::print(LargeSymbolSeconds, FontStyle::LARGE);
+  OLED::print(VALUE_SYMBOL(Seconds), VALUE_FONT);
 }
 #endif /* HALL_SENSOR */
 
@@ -872,10 +893,10 @@ static void setTempF(void) {
 
 static void displayTempF(void) {
 #ifdef OLED_128x32
-  // "°C"/"°F" is two 12px large glyphs; right-align it so it stays on screen, centred
-  OLED::setCursor(OLED_WIDTH - (2 * 12) - 2, 4);
+  // "°C"/"°F" is two small glyphs; right-align it so it stays on screen, centred
+  OLED::setCursor(OLED_WIDTH - (2 * 8) - 2, VALUE_Y);
 #endif
-  OLED::printSymbolDeg(FontStyle::LARGE);
+  OLED::printSymbolDeg(VALUE_FONT);
 }
 
 #ifndef NO_DISPLAY_ROTATE
@@ -900,16 +921,16 @@ static void setDisplayRotation(void) {
 static void displayDisplayRotation(void) {
   switch (getSettingValue(SettingsOptions::OrientationMode)) {
   case orientationMode_t::RIGHT:
-    OLED::print(translatedString(Tr->SettingRightChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingRightChar));
     break;
   case orientationMode_t::LEFT:
-    OLED::print(translatedString(Tr->SettingLeftChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingLeftChar));
     break;
   case orientationMode_t::AUTO:
-    OLED::print(translatedString(Tr->SettingAutoChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingAutoChar));
     break;
   default:
-    OLED::print(translatedString(Tr->SettingRightChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingRightChar));
     break;
   }
 }
@@ -920,7 +941,7 @@ static void displayCoolingBlinkEnabled(void) { OLED::drawCheckbox(getSettingValu
 
 static void displayBuzzerEnabled(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::BuzzerEnabled)); }
 
-static void displayScrollSpeed(void) { OLED::print(translatedString((getSettingValue(SettingsOptions::DescriptionScrollSpeed)) ? Tr->SettingFastChar : Tr->SettingSlowChar), FontStyle::LARGE); }
+static void displayScrollSpeed(void) { printValue(translatedString((getSettingValue(SettingsOptions::DescriptionScrollSpeed)) ? Tr->SettingFastChar : Tr->SettingSlowChar)); }
 
 static void displayReverseButtonTempChangeEnabled(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::ReverseButtonTempChangeEnabled)); }
 
@@ -929,13 +950,13 @@ static void displayReverseButtonSettings(void) { OLED::drawCheckbox(getSettingVa
 static void displayAnimationSpeed(void) {
   switch (getSettingValue(SettingsOptions::AnimationSpeed)) {
   case settingOffSpeed_t::SLOW:
-    OLED::print(translatedString(Tr->SettingSlowChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingSlowChar));
     break;
   case settingOffSpeed_t::MEDIUM:
-    OLED::print(translatedString(Tr->SettingMediumChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingMediumChar));
     break;
   case settingOffSpeed_t::FAST:
-    OLED::print(translatedString(Tr->SettingFastChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingFastChar));
     break;
   default:
     OLED::drawUnavailableIcon();
@@ -947,7 +968,7 @@ static bool displayAnimationOptions(void) { return getSettingValue(SettingsOptio
 static void displayAnimationLoop(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::AnimationLoop)); }
 
 static void displayBrightnessLevel(void) {
-  OLED::printNumber((getSettingValue(SettingsOptions::OLEDBrightness) / BRIGHTNESS_STEP + 1), 1, FontStyle::LARGE);
+  OLED::printNumber((getSettingValue(SettingsOptions::OLEDBrightness) / BRIGHTNESS_STEP + 1), 1, VALUE_FONT);
   // While not optimal to apply this here, it is _very_ convenient
   OLED::setBrightness(getSettingValue(SettingsOptions::OLEDBrightness));
 }
@@ -970,8 +991,8 @@ static void displayLogoTime(void) {
     OLED::drawArea(OLED_WIDTH - OLED_HEIGHT - 2, 0, OLED_HEIGHT, OLED_HEIGHT, RepeatInf);
     break;
   default:
-    OLED::printNumber(getSettingValue(SettingsOptions::LOGOTime), 1, FontStyle::LARGE);
-    OLED::print(LargeSymbolSeconds, FontStyle::LARGE);
+    OLED::printNumber(getSettingValue(SettingsOptions::LOGOTime), 1, VALUE_FONT);
+    OLED::print(VALUE_SYMBOL(Seconds), VALUE_FONT);
     break;
   }
 }
@@ -987,10 +1008,10 @@ static void displayBluetoothLE(void) {
     OLED::drawUnavailableIcon();
     break;
   case 1:
-    OLED::print(translatedString(Tr->SettingBLEOnChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingBLEOnChar));
     break;
   case 2:
-    OLED::print(translatedString(Tr->SettingBLEReadOnlyChar), FontStyle::LARGE);
+    printValue(translatedString(Tr->SettingBLEReadOnlyChar));
     break;
   default:
     OLED::drawUnavailableIcon();
@@ -1003,9 +1024,9 @@ static void displayBluetoothLE(void) {
 static void displayTipChopFrequency(void) {
   // Shown in kHz with one decimal
   uint16_t kHzX10 = getTipChopFrequencyHzX10() / 100;
-  OLED::printNumber(kHzX10 / 10, 2, FontStyle::LARGE);
-  OLED::print(LargeSymbolDot, FontStyle::LARGE);
-  OLED::printNumber(kHzX10 % 10, 1, FontStyle::LARGE);
+  OLED::printNumber(kHzX10 / 10, 2, VALUE_FONT);
+  OLED::print(VALUE_SYMBOL(Dot), VALUE_FONT);
+  OLED::printNumber(kHzX10 % 10, 1, VALUE_FONT);
 }
 #endif /* TIP_CHOP_FREQ_SETTING */
 
@@ -1013,8 +1034,8 @@ static void displayPowerLimit(void) {
   if (getSettingValue(SettingsOptions::PowerLimit) == 0) {
     OLED::drawUnavailableIcon();
   } else {
-    OLED::printNumber(getSettingValue(SettingsOptions::PowerLimit), 3, FontStyle::LARGE);
-    OLED::print(LargeSymbolWatts, FontStyle::LARGE);
+    OLED::printNumber(getSettingValue(SettingsOptions::PowerLimit), 3, VALUE_FONT);
+    OLED::print(VALUE_SYMBOL(Watts), VALUE_FONT);
   }
 }
 
@@ -1039,11 +1060,11 @@ static void setCalibrateVIN(void) {
   for (;;) {
     OLED::setCursor(25, 0);
     uint16_t voltage = getInputVoltageX10(getSettingValue(SettingsOptions::VoltageDiv), 0);
-    OLED::printNumber(voltage / 10, 2, FontStyle::LARGE);
-    OLED::print(LargeSymbolDot, FontStyle::LARGE);
-    OLED::printNumber(voltage % 10, 1, FontStyle::LARGE, false);
-    OLED::print(LargeSymbolVolts, FontStyle::LARGE);
-    OLED::setCursor(0, 8);
+    OLED::printNumber(voltage / 10, 2, VALUE_FONT);
+    OLED::print(VALUE_SYMBOL(Dot), VALUE_FONT);
+    OLED::printNumber(voltage % 10, 1, VALUE_FONT, false);
+    OLED::print(VALUE_SYMBOL(Volts), VALUE_FONT);
+    OLED::setCursor(0, VALUE_Y + 8); // below the readout (which is 16px tall on 128x32)
     OLED::printNumber(getSettingValue(SettingsOptions::VoltageDiv), 3, FontStyle::SMALL);
 
     switch (getButtonState()) {
@@ -1075,9 +1096,9 @@ static void setCalibrateVIN(void) {
 
 static void displayPowerPulse(void) {
   if (getSettingValue(SettingsOptions::KeepAwakePulse)) {
-    OLED::printNumber(getSettingValue(SettingsOptions::KeepAwakePulse) / 10, 1, FontStyle::LARGE);
-    OLED::print(LargeSymbolDot, FontStyle::LARGE);
-    OLED::printNumber(getSettingValue(SettingsOptions::KeepAwakePulse) % 10, 1, FontStyle::LARGE);
+    OLED::printNumber(getSettingValue(SettingsOptions::KeepAwakePulse) / 10, 1, VALUE_FONT);
+    OLED::print(VALUE_SYMBOL(Dot), VALUE_FONT);
+    OLED::printNumber(getSettingValue(SettingsOptions::KeepAwakePulse) % 10, 1, VALUE_FONT);
   } else {
     OLED::drawUnavailableIcon();
   }
@@ -1085,9 +1106,9 @@ static void displayPowerPulse(void) {
 
 static bool showPowerPulseOptions(void) { return getSettingValue(SettingsOptions::KeepAwakePulse) > 0; }
 
-static void displayPowerPulseWait(void) { OLED::printNumber(getSettingValue(SettingsOptions::KeepAwakePulseWait), 1, FontStyle::LARGE); }
+static void displayPowerPulseWait(void) { OLED::printNumber(getSettingValue(SettingsOptions::KeepAwakePulseWait), 1, VALUE_FONT); }
 
-static void displayPowerPulseDuration(void) { OLED::printNumber(getSettingValue(SettingsOptions::KeepAwakePulseDuration), 1, FontStyle::LARGE); }
+static void displayPowerPulseDuration(void) { OLED::printNumber(getSettingValue(SettingsOptions::KeepAwakePulseDuration), 1, VALUE_FONT); }
 
 static void setResetSettings(void) {
   if (userConfirmation(translatedString(Tr->SettingsResetWarning))) {
