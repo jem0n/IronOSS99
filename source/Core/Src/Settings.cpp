@@ -112,6 +112,7 @@ static const SettingConstants settingsConstants[(int)SettingsOptions::SettingsOp
     {                     0, (tipType_t::TIP_TYPE_MAX - 1) > 0 ? (tipType_t::TIP_TYPE_MAX - 1) : 0,                 1,                            0}, // SolderingTipType
     {                     0,                                                                     1,                 1,                            0}, // ReverseButtonSettings
     {                     0,                                                                     3,                 1,                            0}, // TipChopFrequency
+    {                     0,                                                                     1,                 1,                            1}, // BuzzerEnabled
 };
 static_assert((sizeof(settingsConstants) / sizeof(SettingConstants)) == ((int)SettingsOptions::SettingsOptionsLength));
 

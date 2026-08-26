@@ -113,6 +113,7 @@ enum class SettingsItemIndex : uint8_t {
   LanguageSwitch,
   SolderingTipType,
   TipChopFrequency,
+  BuzzerEnabled,
   NUM_ITEMS,
 };
 

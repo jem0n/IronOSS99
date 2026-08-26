@@ -356,6 +356,10 @@
     "TipChopFrequency": {
       "displayText": "Chop\nfreq (kHz)",
       "description": "Fast output chopping frequency for supply current limiting. Lower = cooler MOSFET, but the supply must tolerate longer current pulses."
+    },
+    "BuzzerEnabled": {
+      "displayText": "Buzzer",
+      "description": "Beep when the set temperature is reached and at the end of a profile"
     }
   }
 }

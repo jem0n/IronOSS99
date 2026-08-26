@@ -356,6 +356,10 @@
     "TipChopFrequency": {
       "displayText": "Chop-\nFreq. (kHz)",
       "description": "Frequenz der schnellen Ausgangstaktung zur Strombegrenzung am Netzteil. Niedriger = kühlerer MOSFET, das Netzteil muss aber längere Strompulse vertragen."
+    },
+    "BuzzerEnabled": {
+      "displayText": "Summer",
+      "description": "Piepton, wenn die Solltemperatur erreicht ist und am Ende eines Profils"
     }
   }
 }

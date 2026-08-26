@@ -679,6 +679,15 @@
         "TIP_CHOP_FREQ_SETTING"
       ],
       "description": "Frequency in kHz of the fast output chopping used to keep the average tip current within the supply limit. Lower values run the MOSFET cooler but need a supply that tolerates longer current pulses."
+    },
+    {
+      "id": "BuzzerEnabled",
+      "maxLen": 6,
+      "maxLen2": 13,
+      "include": [
+        "BUZZER_SETTING"
+      ],
+      "description": "Enable the buzzer: short beep when the set temperature is reached and at the end of a profile."
     }
   ]
 }

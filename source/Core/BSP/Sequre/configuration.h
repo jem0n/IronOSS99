@@ -131,10 +131,10 @@
 #define POWER_LIMIT_STEPS  5
 #define OP_AMP_GAIN_STAGE  536
 #define TEMP_uV_LOOKUP_S60
-#define USB_PD_VMAX                     12  // Maximum voltage for PD to negotiate
+#define USB_PD_VMAX              12 // Maximum voltage for PD to negotiate
 #define THERMAL_RUNAWAY_TIME_SEC 20
 #define THERMAL_RUNAWAY_TEMP_C   3
-#define USB_PD_TIMEOUT     1   // Default Timeout for USB-PD Protocol negotiation in x100ms
+#define USB_PD_TIMEOUT           1 // Default Timeout for USB-PD Protocol negotiation in x100ms
 
 #define HARDWARE_MAX_WATTAGE_X10 600
 
@@ -166,10 +166,10 @@
 #define POWER_LIMIT_STEPS  5
 #define OP_AMP_GAIN_STAGE  536
 #define TEMP_uV_LOOKUP_S60
-#define USB_PD_VMAX                     20  // Maximum voltage for PD to negotiate
+#define USB_PD_VMAX              20 // Maximum voltage for PD to negotiate
 #define THERMAL_RUNAWAY_TIME_SEC 20
 #define THERMAL_RUNAWAY_TEMP_C   3
-#define USB_PD_TIMEOUT     1   // Default Timeout for USB-PD Protocol negotiation in x100ms
+#define USB_PD_TIMEOUT           1 // Default Timeout for USB-PD Protocol negotiation in x100ms
 
 #define HARDWARE_MAX_WATTAGE_X10 600
 
@@ -180,15 +180,15 @@
 
 #define OLED_128x32
 #define GPIO_VIBRATION
-#define POW_PD_EXT                2
-#define USB_PD_EPR_WATTAGE        0 /*No EPR*/
+#define POW_PD_EXT         2
+#define USB_PD_EPR_WATTAGE 0 /*No EPR*/
 #define POW_DC
 #define DEBUG_POWER_MENU_BUTTON_B 1
 #define HAS_POWER_DEBUG_MENU
 #define TEMP_NTC
-#define I2C_SOFT_BUS_2 // For now we are doing software I2C to get around hardware chip issues
+#define I2C_SOFT_BUS_2   // For now we are doing software I2C to get around hardware chip issues
 #define I2C_PROBE_POW_PD // For now we are doing software I2C to get around hardware chip issues
-#define I2C_SOFT_BUS_1 // For now we are doing software I2C to get around hardware chip issues
+#define I2C_SOFT_BUS_1   // For now we are doing software I2C to get around hardware chip issues
 #define OLED_I2CBB2
 #define FILTER_DISPLAYED_TIP_TEMP 4 // Filtering for GUI display
 
@@ -210,8 +210,8 @@
 #define POWER_LIMIT_STEPS      5
 #define OP_AMP_GAIN_STAGE      1
 #define TEMP_uV_LOOKUP_PT1000
-#define USB_PD_VMAX       20  // Maximum voltage for PD to negotiate
-#define USB_PD_TIMEOUT     1   // Default Timeout for USB-PD Protocol negotiation in x100ms
+#define USB_PD_VMAX    20 // Maximum voltage for PD to negotiate
+#define USB_PD_TIMEOUT 1  // Default Timeout for USB-PD Protocol negotiation in x100ms
 
 #define NO_DISPLAY_ROTATE     // Disable OLED rotation by accel
 #define MAX_TEMP_C        350 // Max soldering temp selectable °C
@@ -255,14 +255,14 @@
 #define POWER_LIMIT_STEPS  5
 #define OP_AMP_GAIN_STAGE  237 // Two sequential op-amps 1st: 1+(9k29/997R)=10.31 2nd: 1+(22k/1k)=23 -> 10.31*23=237
 #define TEMP_uV_LOOKUP_S99
-#define USB_PD_VMAX        20  // Maximum voltage for PD to negotiate
-#define USB_PD_TIMEOUT     1   // Default Timeout for USB-PD Protocol negotiation in x100ms
+#define USB_PD_VMAX    20 // Maximum voltage for PD to negotiate
+#define USB_PD_TIMEOUT 1  // Default Timeout for USB-PD Protocol negotiation in x100ms
 
-#define HARDWARE_MAX_WATTAGE_X10      1300
-#define ENFORCE_HARDWARE_MAX_WATTAGE  1 // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
+#define HARDWARE_MAX_WATTAGE_X10     1300
+#define ENFORCE_HARDWARE_MAX_WATTAGE 1 // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
 
-#define TIP_THERMAL_MASS    8   // X10 watts to raise 1 deg C in 1 second
-#define TIP_THERMAL_INERTIA 128 // We use a large inertia value to smooth out the drive to the tip since its stupidly sensitive
+#define TIP_THERMAL_MASS         8   // X10 watts to raise 1 deg C in 1 second
+#define TIP_THERMAL_INERTIA      128 // We use a large inertia value to smooth out the drive to the tip since its stupidly sensitive
 #define THERMAL_RUNAWAY_TIME_SEC 20
 #define THERMAL_RUNAWAY_TEMP_C   10
 
@@ -279,27 +279,28 @@
  *  - The chop frequency is user selectable (Power menu) for supplies that tolerate slower switching.
  *  - Power is derated when the handle gets hot, as a last line of defence for the MOSFET.
  */
-#define TIP_RESISTANCE           55 // x10 ohms; stock 5.5 ohm cartridge
-#define TIP_TYPE_SUPPORT         1  // Support for tips of different types, i.e. resistance
-#define TIPTYPE_C245             1  // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
-#define TIP_CURRENT_LIMIT_CHOP   1  // Envelope PWM for power, fast chop only for supply current limiting
-#define TIP_CHOP_FREQ_SETTING    1  // Expose the chop frequency as a user setting
-#define HANDLE_DERATE_START_C    55 // Start reducing max power above this handle temperature
-#define HANDLE_DERATE_END_C      70 // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
+#define TIP_RESISTANCE            55 // x10 ohms; stock 5.5 ohm cartridge
+#define TIP_TYPE_SUPPORT          1  // Support for tips of different types, i.e. resistance
+#define TIPTYPE_C245              1  // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
+#define TIP_CURRENT_LIMIT_CHOP    1  // Envelope PWM for power, fast chop only for supply current limiting
+#define TIP_CHOP_FREQ_SETTING     1  // Expose the chop frequency as a user setting
+#define BUZZER_SETTING            1  // Expose the buzzer on/off as a user setting
+#define HANDLE_DERATE_START_C     55 // Start reducing max power above this handle temperature
+#define HANDLE_DERATE_END_C       70 // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
 #define HANDLE_DERATE_MIN_PERCENT 20
 
 #define OLED_128x32
 #define OLED_128x32_HIRES_UI // Use the full 128x32 UI instead of the scaled 96x16 layout
 #define GPIO_VIBRATION
-#define POW_PD_EXT                2
-#define USB_PD_EPR_WATTAGE        0 /*No EPR*/
+#define POW_PD_EXT         2
+#define USB_PD_EPR_WATTAGE 0 /*No EPR*/
 #define POW_DC
 #define DEBUG_POWER_MENU_BUTTON_B 1
 #define HAS_POWER_DEBUG_MENU
 #define TEMP_NTC
-#define I2C_SOFT_BUS_2 // For now we are doing software I2C to get around hardware chip issues
+#define I2C_SOFT_BUS_2   // For now we are doing software I2C to get around hardware chip issues
 #define I2C_PROBE_POW_PD // For now we are doing software I2C to get around hardware chip issues
-#define I2C_SOFT_BUS_1 // For now we are doing software I2C to get around hardware chip issues
+#define I2C_SOFT_BUS_1   // For now we are doing software I2C to get around hardware chip issues
 #define OLED_I2CBB2
 #define FILTER_DISPLAYED_TIP_TEMP 4 // Filtering for GUI display
 

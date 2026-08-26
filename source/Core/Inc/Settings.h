@@ -78,8 +78,9 @@ enum SettingsOptions {
   SolderingTipType               = 54, // Selecting the type of soldering tip fitted
   ReverseButtonSettings          = 55, // Change the A and B button assigment in Settings menu
   TipChopFrequency               = 56, // Fast chop frequency index used for supply current limiting (TIP_CURRENT_LIMIT_CHOP)
+  BuzzerEnabled                  = 57, // Buzzer on/off (devices with a buzzer)
   //
-  SettingsOptionsLength = 57, // End marker
+  SettingsOptionsLength = 58, // End marker
 };
 
 typedef enum {
@@ -136,13 +137,13 @@ typedef enum {
   T12_6_2_OHM, // Short Tips manufactured by Pine64
   T12_4_OHM,   // Longer tip but low resistance for PTS200
 #endif
-  // #ifdef TIPTYPE_TS80
-  //   TS80_4_5_OHM, // TS80(P) default tips
-  // // We do not know of other tuning tips (?yet?)
-  // #endif
-  // #ifdef TIPTYPE_JBC
-  //   JBC_210_2_5_OHM, // Small JBC tips as used in the S60/S60P
-  // #endif
+// #ifdef TIPTYPE_TS80
+//   TS80_4_5_OHM, // TS80(P) default tips
+// // We do not know of other tuning tips (?yet?)
+// #endif
+// #ifdef TIPTYPE_JBC
+//   JBC_210_2_5_OHM, // Small JBC tips as used in the S60/S60P
+// #endif
 #ifdef TIPTYPE_C245
   C245_5_5_OHM, // Sequre stock 5.5 ohm cartridge (S99 default)
   C245_2_5_OHM, // JBC (or clone) 2.5 ohm C245 style cartridge
@@ -175,9 +176,9 @@ bool isLastSettingValue(const enum SettingsOptions option);
 void setSettingValue(const enum SettingsOptions option, const uint16_t newValue);
 
 // Special access helpers, to reduce logic duplication
-uint8_t     lookupVoltageLevel();
-uint16_t    lookupHallEffectThreshold();
+uint8_t  lookupVoltageLevel();
+uint16_t lookupHallEffectThreshold();
 #ifdef TIP_TYPE_SUPPORT
 const char *lookupTipName(); // Get the name string for the current soldering tip
-#endif /* TIP_TYPE_SUPPORT */
+#endif                       /* TIP_TYPE_SUPPORT */
 #endif                       /* SETTINGS_H_ */

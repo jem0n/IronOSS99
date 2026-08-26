@@ -398,6 +398,9 @@ uint16_t getTipInertia() { return TIP_THERMAL_INERTIA; }
 
 void setBuzzer(bool on) {
 #ifdef BUZZER_Pin
+  if (on && !getSettingValue(SettingsOptions::BuzzerEnabled)) {
+    on = false; // Muted by the user
+  }
   if (on) {
     HAL_TIM_Base_Start_IT(&htim3);
   } else {

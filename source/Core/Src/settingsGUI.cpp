@@ -51,6 +51,7 @@ static void displayReverseButtonSettings(void);
 static void displayPowerLimit(void);
 #ifdef TIP_CHOP_FREQ_SETTING
 static void displayTipChopFrequency(void);
+static void displayBuzzerEnabled(void);
 #endif /* TIP_CHOP_FREQ_SETTING */
 
 #ifdef BLE_ENABLED
@@ -395,6 +396,10 @@ const menuitem UIMenu[] = {
 #endif /* *not* NO_DISPLAY_ROTATE */
   /* Cooling blink warning */
   {SETTINGS_DESC(SettingsItemIndex::CooldownBlink), nullptr, displayCoolingBlinkEnabled, nullptr, SettingsOptions::CoolingTempBlink, SettingsItemIndex::CooldownBlink, 7},
+#ifdef BUZZER_SETTING
+  /* Buzzer on/off */
+  {SETTINGS_DESC(SettingsItemIndex::BuzzerEnabled), nullptr, displayBuzzerEnabled, nullptr, SettingsOptions::BuzzerEnabled, SettingsItemIndex::BuzzerEnabled, 7},
+#endif /* BUZZER_SETTING */
   /* Scroll Speed for descriptions */
   {SETTINGS_DESC(SettingsItemIndex::ScrollingSpeed), nullptr, displayScrollSpeed, nullptr, SettingsOptions::DescriptionScrollSpeed, SettingsItemIndex::ScrollingSpeed, 7},
   /* Reverse Temp change buttons +/- */
@@ -858,6 +863,8 @@ static void displayDisplayRotation(void) {
 #endif /* NO_DISPLAY_ROTATE */
 
 static void displayCoolingBlinkEnabled(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::CoolingTempBlink)); }
+
+static void displayBuzzerEnabled(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::BuzzerEnabled)); }
 
 static void displayScrollSpeed(void) { OLED::print(translatedString((getSettingValue(SettingsOptions::DescriptionScrollSpeed)) ? Tr->SettingFastChar : Tr->SettingSlowChar), FontStyle::LARGE); }
 
