@@ -24,18 +24,18 @@ uint8_t selected_i2c_port = 2;
 fs2711_state_t FS2711::state;
 
 void i2c_write(uint8_t addr, uint8_t data) {
-  if (I2C_PORT == 2) {
+  if (selected_i2c_port == 2) {
     I2CBB2::Mem_Write(FS2711_ADDR, addr, &data, 1);
-  } else if (I2C_PORT == 1) {
+  } else if (selected_i2c_port == 1) {
     I2CBB1::Mem_Write(FS2711_ADDR, addr, &data, 1);
   }
 }
 
 uint8_t i2c_read(uint8_t addr) {
   uint8_t data = 0;
-  if (I2C_PORT == 2) {
+  if (selected_i2c_port == 2) {
     I2CBB2::Mem_Read(FS2711_ADDR, addr, &data, 1);
-  } else if (I2C_PORT == 1) {
+  } else if (selected_i2c_port == 1) {
     I2CBB1::Mem_Read(FS2711_ADDR, addr, &data, 1);
   }
   return data;
@@ -43,9 +43,9 @@ uint8_t i2c_read(uint8_t addr) {
 
 bool i2c_probe(uint8_t addr) {
   bool probing_state = false;
-  if (I2C_PORT == 2) {
+  if (selected_i2c_port == 2) {
     probing_state = I2CBB2::probe(addr);
-  } else if (I2C_PORT == 1) {
+  } else if (selected_i2c_port == 1) {
     probing_state = I2CBB1::probe(addr);
   }
   return probing_state;
@@ -55,11 +55,11 @@ uint8_t FS2711::detect_i2c_bus_num() {
   I2CBB2::probe(88);
   I2CBB2::probe(89);
   if (I2CBB2::probe(FS2711_ADDR)) {
-    I2C_PORT = 2;
+    selected_i2c_port = 2;
   } else {
-    I2C_PORT = 1;
+    selected_i2c_port = 1;
   }
-  return I2C_PORT;
+  return selected_i2c_port;
 }
 
 void FS2711::start() {
