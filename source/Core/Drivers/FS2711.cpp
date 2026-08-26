@@ -19,7 +19,7 @@
 
 extern int32_t powerSupplyWattageLimit;
 
-uint8_t I2C_PORT = 2;
+uint8_t selected_i2c_port = 2;
 
 fs2711_state_t FS2711::state;
 
