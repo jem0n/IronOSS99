@@ -32,7 +32,7 @@ uint8_t                    heaterThermalRunawayCounter = 0;
 static int32_t getPIDResultX10Watts(TemperatureType_t set_point, TemperatureType_t current_value);
 static void    detectThermalRunaway(const TemperatureType_t currentTipTempInC, const uint32_t x10WattsOut);
 static void    setOutputx10WattsViaFilters(int32_t x10Watts);
-int32_t        getX10WattageLimits();
+static int32_t getX10WattageLimits();
 
 /* StartPIDTask function */
 void startPIDTask(void const *argument __unused) {
@@ -130,7 +130,7 @@ template <class T, T Kp, T Ki, T Kd, T integral_limit_scale> struct PID {
     // Thus we multiply this out by the interval time to ~= dv/dt
     // Then the shift by 1000 is ms -> Seconds
 
-    integration_running_sum += (target_delta * interval_ms * Ki) / 1000;
+    integration_running_sum += (target_delta * (T)interval_ms * Ki) / 1000;
 
     // We constrain integration_running_sum to limit windup
     // This is not overly required for most use cases but can prevent large overshoot in constrained implementations
@@ -291,7 +291,7 @@ void detectThermalRunaway(const TemperatureType_t currentTipTempInC, const uint3
   }
 }
 
-int32_t getX10WattageLimits() {
+static int32_t getX10WattageLimits() {
   int32_t limit = availableW10(0);
 
   if (getSettingValue(SettingsOptions::PowerLimit) && limit > (getSettingValue(SettingsOptions::PowerLimit) * 10)) {

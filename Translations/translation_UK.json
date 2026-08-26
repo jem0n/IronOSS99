@@ -43,7 +43,7 @@
       "message": "Ви дійсно хочете скинути налаштування до значень за замовчуванням? (A=Так, В=Ні)"
     },
     "UVLOWarningString": {
-      "message": "АККУМ--"
+      "message": "ВОЛЬТ--"
     },
     "UndervoltageString": {
       "message": "Низька напруга\n"
@@ -64,7 +64,7 @@
       "message": "Охолодження\n"
     },
     "DeviceFailedValidationWarning": {
-      "message": "Вірогідно ваш пристрій підробний!"
+      "message": "Ймовірно, ваш пристрій підроблений!"
     },
     "TooHotToStartProfileWarning": {
       "message": "Занадто гараче для\nзміни профілів"
@@ -81,7 +81,9 @@
     "SettingStartSleepChar": "С",
     "SettingStartSleepOffChar": "К",
     "SettingLockBoostChar": "Т",
-    "SettingLockFullChar": "П"
+    "SettingLockFullChar": "П",
+    "SettingBLEOnChar": "+",
+    "SettingBLEReadOnlyChar": "R"
   },
   "menuGroups": {
     "PowerMenu": {
@@ -175,7 +177,7 @@
     },
     "TempChangeLongStep": {
       "displayText": "Зміна темп.\nдовгим",
-      "description": "Зміна температуру при довгому натисканні!"
+      "description": "Зміна температури при довгому натисканні!"
     },
     "LockingMode": {
       "displayText": "Дозволити\nблок. кнопок",
@@ -319,7 +321,7 @@
     },
     "PowerLimit": {
       "displayText": "Макс.\nпотуж.",
-      "description": "Макс. потужність, яку може використовувати паяльник (Ватт)"
+      "description": "Макс. потужність, яку може використовувати паяльник (Ват)"
     },
     "CalibrateCJC": {
       "displayText": "Калібрувати КХС\nпри наступному запуску",
@@ -327,7 +329,7 @@
     },
     "VoltageCalibration": {
       "displayText": "Калібрування\nнапруги",
-      "description": "Калібрування напруги входу. Налаштувати кнопками, натиснути і утримати щоб завершити."
+      "description": "Калібрування напруги входу. Налаштувати кнопками, натиснути і утримати, щоб завершити."
     },
     "PowerPulsePower": {
       "displayText": "Пульс.\nНавантаж.",

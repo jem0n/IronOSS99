@@ -63,7 +63,7 @@ static const uint16_t NTCHandleLookup[] = {
     2660,  80,    //
 };
 
-uint16_t getHandleTemperature(uint8_t sample) {
+int16_t getHandleTemperature(uint8_t sample) {
 #ifdef TMP36_ADC1_CHANNEL
   int32_t result = getADCHandleTemp(sample);
   // S60 uses 10k NTC resistor
@@ -135,8 +135,6 @@ uint32_t getTipChopFrequencyHzX10() {
   }
   return (8000000UL * 10) / ((uint32_t)(tipChopPrescalers[idx] + 1) * tipChopPeriodTicks);
 }
-
-uint16_t getTipChopDutyX256Latched() { return tipChopDutyX256; }
 
 uint16_t getTipChopDutyX256() {
   // Tip current at the present input voltage

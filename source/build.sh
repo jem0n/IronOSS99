@@ -6,9 +6,6 @@ TRANSLATION_DIR="../Translations"
 # AVAILABLE_LANGUAGES will be calculating according to json files in $TRANSLATION_DIR
 AVAILABLE_LANGUAGES=()
 BUILD_LANGUAGES=()
-# Models whose application flash is too small for the CJK fonts (see the build loop below)
-FLASH_LIMITED_MODELS=(S60P)
-FLASH_LIMITED_EXCLUDED_LANGUAGES=(JA_JP YUE_HK ZH_CN ZH_TW)
 AVAILABLE_MODELS=("TS100" "TS80" "TS80P" "Pinecil" "MHP30" "Pinecilv2" "S60" "S60P" "T55" "S99" "TS101")
 BUILD_MODELS=()
 OPTIONS=()
@@ -187,24 +184,8 @@ if [ ${#BUILD_LANGUAGES[@]} -gt 0 ] && [ ${#BUILD_MODELS[@]} -gt 0 ]; then
     checkLastCommand
 
     for model in "${BUILD_MODELS[@]}"; do
-        MODEL_LANGUAGES=("${BUILD_LANGUAGES[@]}")
-        # The S60P only has 42K of application flash left after its larger bootloader;
-        # the CJK fonts do not fit there, so those languages are skipped.
-        if isInArray "$model" "${FLASH_LIMITED_MODELS[@]}"; then
-            MODEL_LANGUAGES=()
-            for lang in "${BUILD_LANGUAGES[@]}"; do
-                if isInArray "$lang" "${FLASH_LIMITED_EXCLUDED_LANGUAGES[@]}"; then
-                    echo "Skipping $lang for $model (does not fit in flash)"
-                else
-                    MODEL_LANGUAGES+=("$lang")
-                fi
-            done
-        fi
-        if [ ${#MODEL_LANGUAGES[@]} -eq 0 ]; then
-            forceExit "No buildable languages left for $model"
-        fi
-        echo "Building firmware for $model in ${MODEL_LANGUAGES[*]}"
-        make -j"$(nproc)" model="$model" "${MODEL_LANGUAGES[@]/#/firmware-}" "${OPTIONS[@]}" >/dev/null
+        echo "Building firmware for $model in ${BUILD_LANGUAGES[*]}"
+        make -j"$(nproc)" model="$model" "${BUILD_LANGUAGES[@]/#/firmware-}" "${OPTIONS[@]}" >/dev/null
         checkLastCommand
     done
 else

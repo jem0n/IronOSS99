@@ -282,7 +282,6 @@
 #define HANDLE_DERATE_MIN_PERCENT 20
 
 #define OLED_128x32
-#define OLED_128x32_HIRES_UI // Use the full 128x32 UI instead of the scaled 96x16 layout
 #define GPIO_VIBRATION
 #define POW_PD_EXT         2
 #define USB_PD_EPR_WATTAGE 0 /*No EPR*/
@@ -299,15 +298,18 @@
 #define MODEL_HAS_DCDC // No DC/DC, but the fast chop keeps the average current within the supply limit so PD can pick max voltage
 #endif                 /* S99 */
 
-#ifdef MODEL_S99
+
+#ifdef MODEL_S60P
+#define FLASH_LOGOADDR      (0x08000000 + (126 * 1024))
+#define SETTINGS_START_PAGE (0x08000000 + (127 * 1024))
+#elif defined(MODEL_S99)
 // 80K usable flash, code region is 78K (see Makefile); logo + settings are the two 1K pages after it
 #define FLASH_LOGOADDR      (0x08000000 + (78 * 1024))
 #define SETTINGS_START_PAGE (0x08000000 + (79 * 1024))
 #else
 #define FLASH_LOGOADDR      (0x08000000 + (62 * 1024))
 #define SETTINGS_START_PAGE (0x08000000 + (63 * 1024))
-#endif
-
+#endif /* Logo offset for S60P / S99 */
 // Defaults
 
 #ifndef MIN_CALIBRATION_OFFSET

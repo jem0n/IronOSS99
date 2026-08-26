@@ -81,7 +81,9 @@
     "SettingStartSleepChar": "Z",
     "SettingStartSleepOffChar": "R",
     "SettingLockBoostChar": "B",
-    "SettingLockFullChar": "F"
+    "SettingLockFullChar": "F",
+    "SettingBLEOnChar": "+",
+    "SettingBLEReadOnlyChar": "R"
   },
   "menuGroups": {
     "PowerMenu": {
@@ -166,7 +168,7 @@
       "description": "Tip temperature used in \"boost mode\""
     },
     "AutoStart": {
-      "displayText": "Start-up\nbehavior",
+      "displayText": "Start-up\nbehaviour",
       "description": "S=heat to soldering temp | Z=standby at sleep temp until moved | R=standby without heating until moved"
     },
     "TempChangeShortStep": {
@@ -315,7 +317,7 @@
     },
     "BluetoothLE": {
       "displayText": "Bluetooth\n",
-      "description": "Enables BLE"
+      "description": "Enables BLE (+=full access | R=read-only)"
     },
     "PowerLimit": {
       "displayText": "Power\nlimit",

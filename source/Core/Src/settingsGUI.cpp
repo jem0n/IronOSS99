@@ -438,7 +438,7 @@ const menuitem advancedMenu[] = {
    */
 #ifdef BLE_ENABLED
   /* Toggle BLE */
-  {SETTINGS_DESC(SettingsItemIndex::BluetoothLE), nullptr, displayBluetoothLE, nullptr, SettingsOptions::BluetoothLE, SettingsItemIndex::BluetoothLE, 7},
+  {SETTINGS_DESC(SettingsItemIndex::BluetoothLE), setBluetoothLE, displayBluetoothLE, nullptr, SettingsOptions::BluetoothLE, SettingsItemIndex::BluetoothLE, 7},
 #endif /* BLE_ENABLED */
   /* Power limit */
   {SETTINGS_DESC(SettingsItemIndex::PowerLimit), nullptr, displayPowerLimit, nullptr, SettingsOptions::PowerLimit, SettingsItemIndex::PowerLimit, 4},
@@ -566,6 +566,11 @@ static void displayUSBPDMode(void) {
    *  NO_DYNAMIC, 0 = PPS + EPR disabled, fixed PDO only
    */
 
+#ifdef OLED_128x32
+  // Values wrap to two lines (e.g. "Default\nMode"); give them the right part of
+  // the panel and let the newline fill both 16px rows instead of overflowing.
+  OLED::setCursor(OLED_WIDTH - 64, 0);
+#endif
   switch (getSettingValue(SettingsOptions::USBPDMode)) {
   case usbpdMode_t::DEFAULT:
     OLED::print(translatedString(Tr->USBPDModeDefault), FontStyle::SMALL, 255, OLED::getCursorX());
@@ -780,9 +785,47 @@ static void displayHallEffectSleepTime(void) {
 #endif /* HALL_SENSOR */
 
 #ifdef TIP_TYPE_SUPPORT
+#ifdef OLED_128x32
+// Width in pixels of the widest line of a (possibly two-line) tip name. Tip names
+// embed a newline (0x01), e.g. "Auto\nSense"; the small font is 8px per glyph.
+static uint16_t tipNameBlockWidth(const char *name) {
+  const uint8_t *p   = reinterpret_cast<const uint8_t *>(name);
+  uint16_t       cur = 0, widest = 0;
+  while (p[0]) {
+    if (p[0] == 0x01) { // newline marker
+      if (cur > widest) {
+        widest = cur;
+      }
+      cur = 0;
+      p++;
+    } else if (p[0] <= 0xF0) {
+      cur++;
+      p++;
+    } else {
+      if (!p[1]) {
+        break;
+      }
+      cur++;
+      p += 2;
+    }
+  }
+  if (cur > widest) {
+    widest = cur;
+  }
+  return widest * 8;
+}
+#endif
 static void displaySolderingTipType(void) {
+#ifdef OLED_128x32
+  // Tip names embed a newline; drawChar only wraps at y==0, so anchor a
+  // right-aligned, two-line block at the top of the panel.
+  const char *name = lookupTipName();
+  OLED::setCursor(OLED_WIDTH - tipNameBlockWidth(name) - 2, 0);
+  OLED::print(name, FontStyle::SMALL, 255, OLED::getCursorX());
+#else
   // TODO wrapping X value
   OLED::print(lookupTipName(), FontStyle::SMALL, 255, OLED::getCursorX());
+#endif
 }
 // If there is no detection, and no options, max is 0
 static bool showSolderingTipType(void) { return tipType_t::TIP_TYPE_MAX != 0; }
@@ -822,7 +865,13 @@ static void setTempF(void) {
 #endif /* PROFILE_SUPPORT */
 }
 
-static void displayTempF(void) { OLED::printSymbolDeg(FontStyle::LARGE); }
+static void displayTempF(void) {
+#ifdef OLED_128x32
+  // "°C"/"°F" is two 12px large glyphs; right-align it so it stays on screen, centred
+  OLED::setCursor(OLED_WIDTH - (2 * 12) - 2, 4);
+#endif
+  OLED::printSymbolDeg(FontStyle::LARGE);
+}
 
 #ifndef NO_DISPLAY_ROTATE
 
@@ -927,7 +976,22 @@ static void displayAdvancedIDLEScreens(void) { OLED::drawCheckbox(getSettingValu
 static void displayAdvancedSolderingScreens(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::DetailedSoldering)); }
 
 #ifdef BLE_ENABLED
-static void displayBluetoothLE(void) { OLED::drawCheckbox(getSettingValue(SettingsOptions::BluetoothLE)); }
+static void displayBluetoothLE(void) {
+  switch (getSettingValue(SettingsOptions::BluetoothLE)) {
+  case 0:
+    OLED::drawUnavailableIcon();
+    break;
+  case 1:
+    OLED::print(translatedString(Tr->SettingBLEOnChar), FontStyle::LARGE);
+    break;
+  case 2:
+    OLED::print(translatedString(Tr->SettingBLEReadOnlyChar), FontStyle::LARGE);
+    break;
+  default:
+    OLED::drawUnavailableIcon();
+    break;
+  }
+}
 #endif /* BLE_ENABLED */
 
 #ifdef TIP_CHOP_FREQ_SETTING

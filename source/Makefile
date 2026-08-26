@@ -32,7 +32,7 @@ LANGUAGE_GROUP_CUSTOM_NAME=Custom
 endif
 
 LANGUAGE_GROUP_CYRILLIC_LANGS=EN BE BG RU SR_CYRL SR_LATN UK
-LANGUAGE_GROUP_CYRILLIC_NAME=Belorussian+Bulgarian+Russian+Serbian+Ukrainian
+LANGUAGE_GROUP_CYRILLIC_NAME=Belarusian+Bulgarian+Russian+Serbian+Ukrainian
 
 LANGUAGE_GROUP_EUR_LANGS=EN $(filter-out $(LANGUAGE_GROUP_CJK_LANGS) $(LANGUAGE_GROUP_CYRILLIC_LANGS),$(ALL_LANGUAGES))
 LANGUAGE_GROUP_EUR_NAME=European
@@ -141,17 +141,17 @@ CPUFLAGS=-mcpu=cortex-m3  \
          -mthumb          \
          -mfloat-abi=soft
 
-flash_size=62k
 ifeq ($(model), S60P)
 bootldr_size=0x5000
 DEVICE_DFU_ADDRESS=0x08005000
+flash_size=126k
 else ifeq ($(model), S99)
-# The S99 MCU has more than 64K of flash: the stock firmware is linked up to 0x08013820 (~80K),
-# so 80K is proven usable: 78K for code, then the logo page (78K) and settings page (79K) (configuration.h).
-flash_size=78k
+# Stock firmware is linked up to 0x08013820, so at least 80K of flash: 78K code + logo/settings pages
 bootldr_size=0x4c00
 DEVICE_DFU_ADDRESS=0x08004c00
-else 
+flash_size=78k
+else
+flash_size=62k
 # S60 or T55
 bootldr_size=0x4400
 DEVICE_DFU_ADDRESS=0x08004400
@@ -508,10 +508,12 @@ $(HEXFILE_DIR)/$(model)_%.elf: \
 		$(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP)    \
 		$(OUTPUT_DIR)/Core/Gen/Translation.%.o       \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_single.o \
+		$(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o \
 		Makefile $(LDSCRIPT)
 	@test -d $(@D) || mkdir -p $(@D)
 	@echo Linking $@
 	@$(CPP) $(CXXFLAGS) $(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP) \
+        $(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o \
 		$(OUTPUT_DIR)/Core/Gen/Translation.$*.o      \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_single.o \
 		$(LIBS) $(LINKER_FLAGS) -o$@ -Wl,-Map=$@.map
@@ -520,10 +522,12 @@ $(HEXFILE_DIR)/$(model)_string_compressed_%.elf: \
 		$(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP)      \
 		$(OUTPUT_DIR)/Core/Gen/Translation_brieflz.%.o \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_single.o   \
+		$(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o \
 		Makefile $(LDSCRIPT)
 	@test -d $(@D) || mkdir -p $(@D)
 	@echo Linking $@
 	@$(CPP) $(CXXFLAGS) $(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP) \
+	    $(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o \
 		$(OUTPUT_DIR)/Core/Gen/Translation_brieflz.$*.o \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_single.o    \
 		$(LIBS) $(LINKER_FLAGS) -o$@ -Wl,-Map=$@.map
@@ -532,10 +536,12 @@ $(HEXFILE_DIR)/$(model)_font_compressed_%.elf: \
 		$(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP)           \
 		$(OUTPUT_DIR)/Core/Gen/Translation_brieflz_font.%.o \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_single.o        \
+		$(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o \
 		Makefile $(LDSCRIPT)
 	@test -d $(@D) || mkdir -p $(@D)
 	@echo Linking $@
 	@$(CPP) $(CXXFLAGS) $(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP) \
+        $(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o \
 		$(OUTPUT_DIR)/Core/Gen/Translation_brieflz_font.$*.o  \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_single.o          \
 		$(LIBS) $(LINKER_FLAGS) -o$@ -Wl,-Map=$@.map
@@ -568,11 +574,23 @@ Core/Gen/Translation.%.cpp $(OUTPUT_DIR)/Core/Gen/translation.files/%.pickle: ..
 		--output-pickled "$(OUTPUT_DIR)/Core/Gen/translation.files/$*.pickle" \
 		$*
 
+Core/Gen/settings_gen.%.cpp: Settings/settings.yaml \
+		Settings/generate_settings.py           \
+		Settings/settings_gen.cpp.template
+	@test -d Core/Gen || mkdir -p Core/Gen
+	@echo 'Generating settings file for model $*'
+	@$(HOST_PYTHON) Settings/generate_settings.py $* Settings/settings.yaml Core/Gen/settings_gen.$*.cpp
+
 Core/Gen/macros.txt: Makefile
 	@test -d "$(CURDIR)/Core/Gen" || mkdir -p "$(CURDIR)/Core/Gen"
 	echo "#include <configuration.h>" | $(CC) -dM -E $(CFLAGS) -MF "$(CURDIR)/Core/Gen/macros.tmp" - > "$(CURDIR)/Core/Gen/macros.txt"
 
 # The recipes to produce compressed translation data
+
+$(OUTPUT_DIR)/Core/Gen/settings_gen.%.o: Core/Gen/settings_gen.%.cpp
+	@test -d $(@D) || mkdir -p $(@D)
+	@echo Generating $@
+	@$(CPP) -c $(CXXFLAGS) $< -o $@
 
 $(OUTPUT_DIR)/Core/Gen/translation.files/%.o: Core/Gen/Translation.%.cpp
 	@test -d $(@D) || mkdir -p $(@D)
@@ -618,23 +636,27 @@ $(HEXFILE_DIR)/$(model)_multi_$(2).elf: \
 		$(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP)       \
 		$(OUTPUT_DIR)/Core/Gen/Translation_multi.$(1).o \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_multi.o     \
+		$(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o     \
 		Makefile $(LDSCRIPT)
 	@test -d $$(@D) || mkdir -p $$(@D)
 	@echo Linking $$@
 	@$(CPP) $(CXXFLAGS) $(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP) \
 		$(OUTPUT_DIR)/Core/Gen/Translation_multi.$(1).o       \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_multi.o           \
+		$(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o     \
 		$(LIBS) $(LINKER_FLAGS) -o$$@ -Wl,-Map=$$@.map
 
 $(HEXFILE_DIR)/$(model)_multi_compressed_$(2).elf: \
 		$(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP)               \
 		$(OUTPUT_DIR)/Core/Gen/Translation_brieflz_multi.$(1).o \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_multi.o             \
+		$(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o     \
 		Makefile $(LDSCRIPT)
 	@test -d $$(@D) || mkdir -p $$(@D)
 	@echo Linking $$@
 	@$(CPP) $(CXXFLAGS) $(OUT_OBJS_S) $(OUT_OBJS) $(OUT_OBJS_CPP)   \
 		$(OUTPUT_DIR)/Core/Gen/Translation_brieflz_multi.$(1).o \
+		$(OUTPUT_DIR)/Core/Gen/settings_gen.$(model).o     \
 		$(OUTPUT_DIR)/Core/LangSupport/lang_multi.o             \
 		$(LIBS) $(LINKER_FLAGS) -o$$@ -Wl,-Map=$$@.map
 
@@ -717,6 +739,5 @@ check-style:
 # Pull in dependency info for *existing* .o files
 -include $(OUT_OBJS:.o=.d)
 -include $(OUT_OBJS_CPP:.o=.d)
--include $(OUTPUT_DIR)/Core/Gen/Translation.*.d
--include $(OUTPUT_DIR)/Core/Gen/Translation_*.d
+-include $(OUTPUT_DIR)/Core/Gen/*.d
 -include $(OUTPUT_DIR)/Core/Gen/translation.files/*.d
