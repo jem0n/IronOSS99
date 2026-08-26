@@ -22,6 +22,9 @@ extern const char *LargeSymbolSpace;
 extern const char *SmallSymbolAmps;
 extern const char *SmallSymbolOhm;
 extern const char *SmallSymbolLessThan;
+extern const char *SmallSymbolKiloHertz;
+extern const char *SmallSymbolMax;
+extern const char *SmallSymbolPercent;
 extern const char *LargeSymbolAmps;
 extern const char *SmallSymbolDot;
 extern const char *LargeSymbolDot;
@@ -191,6 +194,7 @@ struct FontSection {
   uint16_t       font06_decompressed_size;
   const uint8_t *font12_compressed_source; // Pointer to compressed data or null
   const uint8_t *font06_compressed_source; // Pointer to compressed data or null
+  const uint8_t *font06_compact_start_ptr; // 6x8 font for FontStyle::TINY (same table as font06 on 96x16 panels)
 };
 
 extern const FontSection FontSectionInfo;

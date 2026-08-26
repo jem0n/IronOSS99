@@ -136,6 +136,8 @@ uint32_t getTipChopFrequencyHzX10() {
   return (8000000UL * 10) / ((uint32_t)(tipChopPrescalers[idx] + 1) * tipChopPeriodTicks);
 }
 
+uint16_t getTipChopDutyX256Latched() { return tipChopDutyX256; }
+
 uint16_t getTipChopDutyX256() {
   // Tip current at the present input voltage
   uint32_t voltageX10     = getInputVoltageX10(getSettingValue(SettingsOptions::VoltageDiv), 0);

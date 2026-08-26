@@ -143,6 +143,9 @@ def get_constants() -> List[Tuple[str, str]]:
         ("SmallSymbolAmps", "A"),
         ("SmallSymbolOhm", "Ω"),
         ("SmallSymbolLessThan", "<"),
+        ("SmallSymbolKiloHertz", "kHz"),
+        ("SmallSymbolMax", "Max"),
+        ("SmallSymbolPercent", "%"),
         ("LargeSymbolDC", "DC"),
         ("LargeSymbolCellCount", "S"),
         ("SmallSymbolVersionNumber", read_version()),
@@ -367,7 +370,7 @@ def get_letter_counts(defs: dict, lang: dict, build_version: str) -> Dict:
 
 
 def convert_letter_counts_to_ranked_symbols_with_forced(
-    symbol_dict: Dict[str, int]
+    symbol_dict: Dict[str, int],
 ) -> List[str]:
     # Add in forced symbols first
     ranked_symbols = []
@@ -772,6 +775,22 @@ def make_font_table_named_cpp(
     return output_table
 
 
+def make_font_table_06_compact_cpp(
+    sym_list: List[str], font_map: FontMapsPerFont
+) -> str:
+    """The hand drawn 6x8 font, kept alongside the Terminus fonts on 128x32 panels for
+    dense status screens (FontStyle::TINY). Symbols without a 6x8 glyph get a blank cell
+    so the table stays indexable."""
+    output_table = "const uint8_t USER_FONT_6x8_COMPACT[] = {\n"
+    for i, sym in enumerate(sym_list):
+        font_bytes = font_map.font06_maps.get(sym)
+        if not font_bytes:
+            font_bytes = bytes(6)
+        output_table += f"{bytes_to_c_hex(font_bytes)}//0x{i + 2:X} -> {sym}\n"
+    output_table += "};\n"
+    return output_table
+
+
 def make_font_table_06_cpp(sym_list: List[str], font_map: FontMapsPerFont) -> str:
     output_table = "const uint8_t USER_FONT_6x8[] = {\n"
     for i, sym in enumerate(sym_list):
@@ -907,6 +926,7 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
         f.write(
             make_terminus_table_cpp("USER_FONT_6x8", "8x16", data.small_text_symbols)
         )
+        f.write(make_font_table_06_compact_cpp(data.small_text_symbols, font_map))
         f.write("#else\n")
         f.write(
             make_font_table_cpp(
@@ -917,6 +937,7 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
                 large_font_symbol_conversion_table,
             )
         )
+        f.write("#define USER_FONT_6x8_COMPACT USER_FONT_6x8\n")
         f.write("#endif /* OLED_128x32 */\n")
         f.write(
             "const FontSection FontSectionInfo = {\n"
@@ -926,6 +947,7 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
             "    .font06_decompressed_size = 0,\n"
             "    .font12_compressed_source = 0,\n"
             "    .font06_compressed_source = 0,\n"
+            "    .font06_compact_start_ptr = USER_FONT_6x8_COMPACT,\n"
             "};\n"
         )
     else:
@@ -943,6 +965,7 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
         emit_compressed("font_06x08_brieflz", t06)
         f.write(f"static uint8_t font12_out_buffer[{len(t12)}];\n")
         f.write(f"static uint8_t font06_out_buffer[{len(t06)}];\n")
+        f.write(make_font_table_06_compact_cpp(data.small_text_symbols, font_map))
         f.write("#else\n")
         h12 = bytearray()
         for sym in data.large_text_symbols:
@@ -954,6 +977,7 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
         emit_compressed("font_06x08_brieflz", bytes(h06))
         f.write(f"static uint8_t font12_out_buffer[{len(h12)}];\n")
         f.write(f"static uint8_t font06_out_buffer[{len(h06)}];\n")
+        f.write("#define USER_FONT_6x8_COMPACT font06_out_buffer\n")
         f.write("#endif /* OLED_128x32 */\n")
 
         f.write(
@@ -964,6 +988,7 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
             "    .font06_decompressed_size = sizeof(font06_out_buffer),\n"
             "    .font12_compressed_source = font_12x16_brieflz,\n"
             "    .font06_compressed_source = font_06x08_brieflz,\n"
+            "    .font06_compact_start_ptr = USER_FONT_6x8_COMPACT,\n"
             "};\n"
         )
 
