@@ -258,8 +258,12 @@
 #define USB_PD_VMAX    20 // Maximum voltage for PD to negotiate
 #define USB_PD_TIMEOUT 1  // Default Timeout for USB-PD Protocol negotiation in x100ms
 
-#define HARDWARE_MAX_WATTAGE_X10     1300
-#define ENFORCE_HARDWARE_MAX_WATTAGE 1 // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
+#define HARDWARE_MAX_WATTAGE_X10 1300
+// The op-amp stage (x237) saturates the 3.3 V ADC at ~464 C of thermocouple delta; with the cold junction added
+// the highest temperature the S99 can actually measure (and therefore regulate) is ~485 C. Stock claims 500 C.
+#define MAX_TEMP_C                   480 // Max soldering temp selectable C
+#define MAX_TEMP_F                   895 // Max soldering temp selectable F
+#define ENFORCE_HARDWARE_MAX_WATTAGE 1   // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
 
 #define TIP_THERMAL_MASS         8   // X10 watts to raise 1 deg C in 1 second
 #define TIP_THERMAL_INERTIA      128 // We use a large inertia value to smooth out the drive to the tip since its stupidly sensitive
