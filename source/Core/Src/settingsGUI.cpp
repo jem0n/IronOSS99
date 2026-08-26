@@ -128,7 +128,7 @@ static bool showSolderingTipType(void);
 
 // Menu functions
 
-#if defined(POW_DC) || defined(POW_QC) || defined(POW_PD) || defined(POW_PD) || POW_PD_EXT == 2
+#if defined(POW_DC) || defined(POW_QC) || defined(POW_PD) || POW_PD_EXT == 2
 static void displayPowerMenu(void);
 #endif /* POW_DC or POW_QC or POW_PD or POD_PD_EXT 2*/
 
