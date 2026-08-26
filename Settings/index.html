@@ -95,7 +95,7 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#setting-boost-temp">Setting: Boost temp</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#setting-start-up-behavior">Setting: Start-up behavior</a>
+    <li class="toctree-l3"><a class="reference internal" href="#setting-start-up-behaviour">Setting: Start-up behaviour</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#setting-temp-change-short">Setting: Temp change short</a>
     </li>
@@ -312,7 +312,7 @@ This is the "on device help text".</p>
 <p>When the unit is in soldering mode. You can hold down the button at the front of the device to temporarily override the soldering temperature to this value. This SETS the temperature, it does not ADD to it.</p>
 <p>On device help text:</p>
 <p>Tip temperature used in "boost mode"</p>
-<h3 id="setting-start-up-behavior">Setting: Start-up behavior</h3>
+<h3 id="setting-start-up-behaviour">Setting: Start-up behaviour</h3>
 <p>When the device powers up, should it enter into a special mode. These settings set it to either start into soldering mode, sleeping mode or auto mode (Enters into soldering mode on the first movement).</p>
 <p>On device help text:</p>
 <p>S=heat to soldering temp | Z=standby at sleep temp until moved | R=standby without heating until moved</p>
@@ -453,9 +453,9 @@ This is the "on device help text".</p>
 <p>On device help text:</p>
 <p>Display detailed info in a smaller font on soldering screen</p>
 <h3 id="setting-bluetooth">Setting: Bluetooth</h3>
-<p>Should BLE be enabled at boot time.</p>
+<p>BLE mode: Off, full read/write access (+), or read-only mode (R) which blocks all writes over BLE.</p>
 <p>On device help text:</p>
-<p>Enables BLE</p>
+<p>Enables BLE (+=full access | R=read-only)</p>
 <h3 id="setting-power-limit">Setting: Power limit</h3>
 <p>Allows setting a custom wattage for the device to aim to keep the AVERAGE power below. The unit can't control its peak power no matter how you set this. (Except for MHP30 which will regulate nicely to this). If USB-PD is in use, the limit will be set to the lower of this and the supplies advertised wattage.</p>
 <p>On device help text:</p>
