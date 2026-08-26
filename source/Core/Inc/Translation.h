@@ -20,6 +20,8 @@ extern const char *LargeSymbolMinus;
 extern const char *SmallSymbolSpace;
 extern const char *LargeSymbolSpace;
 extern const char *SmallSymbolAmps;
+extern const char *SmallSymbolOhm;
+extern const char *SmallSymbolLessThan;
 extern const char *LargeSymbolAmps;
 extern const char *SmallSymbolDot;
 extern const char *LargeSymbolDot;

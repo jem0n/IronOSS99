@@ -141,6 +141,8 @@ def get_constants() -> List[Tuple[str, str]]:
         ("LargeSymbolVolts", "V"),
         ("SmallSymbolVolts", "V"),
         ("SmallSymbolAmps", "A"),
+        ("SmallSymbolOhm", "Ω"),
+        ("SmallSymbolLessThan", "<"),
         ("LargeSymbolDC", "DC"),
         ("LargeSymbolCellCount", "S"),
         ("SmallSymbolVersionNumber", read_version()),
