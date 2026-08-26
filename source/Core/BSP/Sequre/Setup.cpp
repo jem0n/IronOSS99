@@ -337,6 +337,11 @@ static void MX_TIM3_Init(void) {
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BUZZER_GPIO_Port, &GPIO_InitStruct);
   HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
+#ifdef BUZZER_RETURN_Pin
+  GPIO_InitStruct.Pin = BUZZER_RETURN_Pin;
+  HAL_GPIO_Init(BUZZER_RETURN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(BUZZER_RETURN_GPIO_Port, BUZZER_RETURN_Pin, GPIO_PIN_RESET);
+#endif
 
   HAL_NVIC_SetPriority(TIM3_IRQn, 14, 0);
   HAL_NVIC_EnableIRQ(TIM3_IRQn);

@@ -110,6 +110,10 @@
 // Passive piezo buzzer, driven with a software square wave from TIM3 (as the stock firmware does)
 #define BUZZER_Pin       GPIO_PIN_12
 #define BUZZER_GPIO_Port GPIOB
+// The stock firmware drives this low at boot and never touches it again; it looks like the return / enable
+// side of the buzzer circuit, so it is kept low as well.
+#define BUZZER_RETURN_Pin       GPIO_PIN_8
+#define BUZZER_RETURN_GPIO_Port GPIOA
 
 #endif // MODEL_S99
 
