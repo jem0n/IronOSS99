@@ -136,10 +136,10 @@
       "displayText": "JBC\nC210"
     },
     "TipTypeC245Stock": {
-      "displayText": "Stock\n5,5 Ohm"
+      "displayText": "Stock\n5.5Ω"
     },
     "TipTypeC245JBC": {
-      "displayText": "JBC\n2,5 Ohm"
+      "displayText": "JBC\n2.5Ω"
     }
   },
   "menuOptions": {
@@ -356,7 +356,7 @@
       "description": "Wählen Sie den Typ der eingesetzten Spitze"
     },
     "TipChopFrequency": {
-      "displayText": "Chop-\nFreq. (kHz)",
+      "displayText": "Chop-\nFreq.",
       "description": "Frequenz der schnellen Ausgangstaktung zur Strombegrenzung am Netzteil. Niedriger = kühlerer MOSFET, das Netzteil muss aber längere Strompulse vertragen."
     },
     "BuzzerEnabled": {

@@ -136,10 +136,10 @@
       "displayText": "JBC\nC210"
     },
     "TipTypeC245Stock": {
-      "displayText": "Stock\n5.5 Ohm"
+      "displayText": "Stock\n5.5Ω"
     },
     "TipTypeC245JBC": {
-      "displayText": "JBC\n2.5 Ohm"
+      "displayText": "JBC\n2.5Ω"
     }
   },
   "menuOptions": {
@@ -356,7 +356,7 @@
       "description": "选择安装合适的尖端类型"
     },
     "TipChopFrequency": {
-      "displayText": "Chop\nfreq (kHz)",
+      "displayText": "Chop\nfreq",
       "description": "Fast output chopping frequency for supply current limiting. Lower = cooler MOSFET, but the supply must tolerate longer current pulses."
     },
     "BuzzerEnabled": {

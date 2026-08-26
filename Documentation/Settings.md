@@ -472,7 +472,7 @@ On device help text:
 
 Select the tip type fitted
 
-### Setting: Chop freq (kHz)
+### Setting: Chop freq
 
 Frequency in kHz of the fast output chopping used to keep the average tip current within the supply limit. Lower values run the MOSFET cooler but need a supply that tolerates longer current pulses.
 

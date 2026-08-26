@@ -812,7 +812,12 @@ static uint16_t tipNameBlockWidth(const char *name) {
   if (cur > widest) {
     widest = cur;
   }
+  // Cell width of the small font: Terminus 8x16 on 128x32 panels, 6x8 elsewhere
+#ifdef OLED_128x32
   return widest * 8;
+#else
+  return widest * 6;
+#endif
 }
 #endif
 static void displaySolderingTipType(void) {
