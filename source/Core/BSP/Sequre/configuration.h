@@ -179,6 +179,7 @@
 #define TIP_RESISTANCE 20 //(actually 2.5 ish but we need to be more conservative on pwm'ing watt limit) x10 ohms
 
 #define OLED_128x32
+#define OLED_128x32_DENSE_UI 1 // Data dense detailed screens (126K flash, plenty of room)
 #define GPIO_VIBRATION
 #define POW_PD_EXT         2
 #define USB_PD_EPR_WATTAGE 0 /*No EPR*/
@@ -277,6 +278,7 @@
 #define TIP_CURRENT_LIMIT_CHOP    1  // Envelope PWM for power, fast chop only for supply current limiting
 #define TIP_CHOP_FREQ_SETTING     1  // Expose the chop frequency as a user setting
 #define BUZZER_SETTING            1  // Expose the buzzer on/off as a user setting
+#define OLED_128x32_DENSE_UI      1  // Data dense detailed screens (needs the compact 6x8 font, ~1.5K of flash)
 #define HANDLE_DERATE_START_C     55 // Start reducing max power above this handle temperature
 #define HANDLE_DERATE_END_C       70 // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
 #define HANDLE_DERATE_MIN_PERCENT 20
@@ -297,7 +299,6 @@
 
 #define MODEL_HAS_DCDC // No DC/DC, but the fast chop keeps the average current within the supply limit so PD can pick max voltage
 #endif                 /* S99 */
-
 
 #ifdef MODEL_S60P
 #define FLASH_LOGOADDR      (0x08000000 + (126 * 1024))

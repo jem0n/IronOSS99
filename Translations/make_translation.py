@@ -728,6 +728,34 @@ def get_forced_first_symbols() -> List[str]:
     return forced_first_symbols
 
 
+def get_tiny_font_symbols() -> List[str]:
+    """Characters the firmware prints in FontStyle::TINY (the compact 6x8 font kept next to
+    the Terminus fonts on 128x32 panels): the small-font constants and the power source
+    names. They are ranked directly after the forced symbols so the compact table only has
+    to cover this short prefix of the small font."""
+    forced = set(get_forced_first_symbols())
+    out: List[str] = []
+    texts = [text for name, text in get_constants() if name.startswith("SmallSymbol")]
+    texts.extend(get_power_source_list())
+    for text in texts:
+        for c in text:
+            if c not in forced and c != "\n" and c not in out:
+                out.append(c)
+    return out
+
+
+def rank_small_font_symbols(symbol_dict: Dict[str, int]) -> List[str]:
+    ranked = convert_letter_counts_to_ranked_symbols_with_forced(symbol_dict)
+    forced = get_forced_first_symbols()
+    tiny = [c for c in get_tiny_font_symbols() if c in ranked]
+    rest = [c for c in ranked if c not in forced and c not in tiny]
+    return forced + tiny + rest
+
+
+def tiny_font_symbol_count() -> int:
+    return len(get_forced_first_symbols()) + len(get_tiny_font_symbols())
+
+
 def build_symbol_conversion_map(sym_list: List[str]) -> Dict[str, bytes]:
     forced_first_symbols = get_forced_first_symbols()
     if sym_list[: len(forced_first_symbols)] != forced_first_symbols:
@@ -779,10 +807,11 @@ def make_font_table_06_compact_cpp(
     sym_list: List[str], font_map: FontMapsPerFont
 ) -> str:
     """The hand drawn 6x8 font, kept alongside the Terminus fonts on 128x32 panels for
-    dense status screens (FontStyle::TINY). Symbols without a 6x8 glyph get a blank cell
-    so the table stays indexable."""
+    dense status screens (FontStyle::TINY). Only the leading symbols the firmware prints
+    in TINY are emitted (see rank_small_font_symbols); a symbol without a 6x8 glyph gets a
+    blank cell so the table stays indexable."""
     output_table = "const uint8_t USER_FONT_6x8_COMPACT[] = {\n"
-    for i, sym in enumerate(sym_list):
+    for i, sym in enumerate(sym_list[: tiny_font_symbol_count()]):
         font_bytes = font_map.font06_maps.get(sym)
         if not font_bytes:
             font_bytes = bytes(6)
@@ -852,9 +881,7 @@ def prepare_language(lang: dict, defs: dict, build_version: str) -> LanguageData
     logging.info(f"Preparing language data for {language_code}")
     # Iterate over all of the text to build up the symbols & counts
     letter_count_data = get_letter_counts(defs, lang, build_version)
-    small_font_symbols = convert_letter_counts_to_ranked_symbols_with_forced(
-        letter_count_data["smallFontCounts"]
-    )
+    small_font_symbols = rank_small_font_symbols(letter_count_data["smallFontCounts"])
     large_font_symbols = convert_letter_counts_to_ranked_symbols_with_forced(
         letter_count_data["bigFontCounts"]
     )
@@ -887,9 +914,7 @@ def prepare_languages(
             total_symbol_counts, letter_count_data
         )
 
-    small_font_symbols = convert_letter_counts_to_ranked_symbols_with_forced(
-        total_symbol_counts["smallFontCounts"]
-    )
+    small_font_symbols = rank_small_font_symbols(total_symbol_counts["smallFontCounts"])
     large_font_symbols = convert_letter_counts_to_ranked_symbols_with_forced(
         total_symbol_counts["bigFontCounts"]
     )
@@ -926,7 +951,11 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
         f.write(
             make_terminus_table_cpp("USER_FONT_6x8", "8x16", data.small_text_symbols)
         )
+        f.write("#ifdef OLED_128x32_DENSE_UI\n")
         f.write(make_font_table_06_compact_cpp(data.small_text_symbols, font_map))
+        f.write("#else\n")
+        f.write("#define USER_FONT_6x8_COMPACT USER_FONT_6x8\n")
+        f.write("#endif /* OLED_128x32_DENSE_UI */\n")
         f.write("#else\n")
         f.write(
             make_font_table_cpp(
@@ -965,7 +994,11 @@ def render_font_block(data: LanguageData, f: TextIO, compress_font: bool = False
         emit_compressed("font_06x08_brieflz", t06)
         f.write(f"static uint8_t font12_out_buffer[{len(t12)}];\n")
         f.write(f"static uint8_t font06_out_buffer[{len(t06)}];\n")
+        f.write("#ifdef OLED_128x32_DENSE_UI\n")
         f.write(make_font_table_06_compact_cpp(data.small_text_symbols, font_map))
+        f.write("#else\n")
+        f.write("#define USER_FONT_6x8_COMPACT font06_out_buffer\n")
+        f.write("#endif /* OLED_128x32_DENSE_UI */\n")
         f.write("#else\n")
         h12 = bytearray()
         for sym in data.large_text_symbols:

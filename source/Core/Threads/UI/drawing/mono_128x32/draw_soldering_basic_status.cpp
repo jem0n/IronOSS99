@@ -2,6 +2,7 @@
 #include "ui_drawing.hpp"
 #include <OperatingModes.h>
 #ifdef OLED_128x32
+#ifdef OLED_128x32_DENSE_UI
 
 // [heat / boost column 16px][LARGE temp + °C 48px][info column: 20.0V / source / set point in the 6x8 font]
 // The side columns swap over for left handed mode so the heat indicator stays next to the buttons.
@@ -43,4 +44,50 @@ void ui_draw_soldering_basic_status(bool boostModeOn) {
   OLED::printNumber(getSettingValue(boostModeOn ? SettingsOptions::BoostTemp : SettingsOptions::SolderingTemp), 3, FontStyle::TINY);
   OLED::printSymbolDeg(FontStyle::TINY);
 }
+
+#else  /* upstream layout */
+
+void ui_draw_soldering_basic_status(bool boostModeOn) {
+  OLED::setCursor(0, 0);
+  // We switch the layout direction depending on the orientation of the oled
+  if (OLED::getRotation()) {
+    // battery
+    ui_draw_power_source_icon();
+    // Space out gap between battery <-> temp
+    OLED::print(LargeSymbolSpace, FontStyle::LARGE);
+    // Draw current tip temp (y=4 centres the 24px number; +12 nudges it one digit right; restore after)
+    OLED::setCursor(OLED::getCursorX() + 12, 4);
+    ui_draw_tip_temperature(true, FontStyle::LARGE);
+    OLED::setCursor(OLED::getCursorX(), 0);
+
+    // We draw boost arrow if boosting,
+    // or else gap temp <-> heat indicator
+    if (boostModeOn) {
+      OLED::drawSymbol(2);
+    } else {
+      OLED::print(LargeSymbolSpace, FontStyle::LARGE);
+    }
+
+    // Draw heating/cooling symbols
+    OLED::drawHeatSymbol(X10WattsToPWM(x10WattHistory.average()));
+  } else {
+    // Draw heating/cooling symbols
+    OLED::drawHeatSymbol(X10WattsToPWM(x10WattHistory.average()));
+    // We draw boost arrow if boosting,
+    // or else gap temp <-> heat indicator
+    if (boostModeOn) {
+      OLED::drawSymbol(2);
+    } else {
+      OLED::print(LargeSymbolSpace, FontStyle::LARGE);
+    }
+    // Draw current tip temp (y=4 centres the 24px number; +12 nudges it one digit right; restore after)
+    OLED::setCursor(OLED::getCursorX() + 12, 4);
+    ui_draw_tip_temperature(true, FontStyle::LARGE);
+    OLED::setCursor(OLED::getCursorX(), 0);
+    // Power source icon near the right edge (matches the simplified idle screen)
+    OLED::setCursor(116, 0);
+    ui_draw_power_source_icon();
+  }
+}
+#endif /* OLED_128x32_DENSE_UI */
 #endif
