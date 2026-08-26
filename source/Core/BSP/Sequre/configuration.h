@@ -258,8 +258,8 @@
 #define USB_PD_VMAX    20 // Maximum voltage for PD to negotiate
 #define USB_PD_TIMEOUT 1  // Default Timeout for USB-PD Protocol negotiation in x100ms
 
-#define HARDWARE_MAX_WATTAGE_X10 1300
-#define ENFORCE_HARDWARE_MAX_WATTAGE 1   // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
+#define HARDWARE_MAX_WATTAGE_X10     1300
+#define ENFORCE_HARDWARE_MAX_WATTAGE 1 // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
 
 #define TIP_THERMAL_MASS         8   // X10 watts to raise 1 deg C in 1 second
 #define TIP_THERMAL_INERTIA      128 // We use a large inertia value to smooth out the drive to the tip since its stupidly sensitive
@@ -267,17 +267,9 @@
 #define THERMAL_RUNAWAY_TEMP_C   10
 
 /*
- * Tip / output stage handling
- *
- * The S99 drives the cartridge directly from a MOSFET with no inductor, so the only way to keep the average current
- * below what the supply can deliver is to chop the output with a fast PWM. Hard switching 8A (2.5 ohm cartridge on 20V)
- * at ~11 kHz is what cooks the MOSFET, so:
- *  - The cartridge resistance is user selectable (stock 5 ohm or JBC style 2.5 ohm) so the current maths is right.
- *  - Power is regulated with the slow (~20 Hz) envelope like every other iron; the fast chop is only applied
- *    inside the envelope on-time and only at the duty needed to respect the supply current limit.
- *    A 5 ohm cartridge on a 20V/5A supply, or any DC supply, therefore never gets chopped at all.
- *  - The chop frequency is user selectable (Power menu) for supplies that tolerate slower switching.
- *  - Power is derated when the handle gets hot, as a last line of defence for the MOSFET.
+ * Tip drive: no inductor, so the fast chop only runs when the supply can't deliver the full tip
+ * current, and only inside the 20 Hz PWM on-time. See BSP.cpp. Cartridge resistance is a setting
+ * (stock 5.5 ohm / JBC 2.5 ohm), power is derated when the handle gets hot.
  */
 #define TIP_RESISTANCE            55 // x10 ohms; stock 5.5 ohm cartridge
 #define TIP_TYPE_SUPPORT          1  // Support for tips of different types, i.e. resistance
