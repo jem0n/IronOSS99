@@ -355,10 +355,6 @@
       "displayText": "Löt-\nspitzentyp",
       "description": "Wählen Sie den Typ der eingesetzten Spitze"
     },
-    "TipChopFrequency": {
-      "displayText": "Chop-\nFreq.",
-      "description": "Frequenz der schnellen Ausgangstaktung zur Strombegrenzung am Netzteil. Niedriger = kühlerer MOSFET, das Netzteil muss aber längere Strompulse vertragen."
-    },
     "BuzzerEnabled": {
       "displayText": "Summer",
       "description": "Piepton, wenn die Solltemperatur erreicht ist und am Ende eines Profils"

@@ -112,29 +112,19 @@ static void switchToFastPWM(void) {
  *
  * Switching 8 A at 11 kHz all the time is what overheated the FET before.
  */
-static const uint16_t    tipChopPeriodTicks  = 64 + 1;             // TIM4 ARR + 1
-static const uint16_t    tipChopPrescalers[] = {10, 20, 40, 80};   // 8 MHz / (PSC+1) / 65 -> 11.2k, 5.9k, 3.0k, 1.5k Hz
-static volatile uint16_t tipChopCompare      = tipChopPeriodTicks; // TIM4 CCR3 while the envelope is on; ARR+1 == solid on
-static uint16_t          tipChopDutyX256     = 256;
+static const uint16_t    tipChopPeriodTicks = 64 + 1;             // TIM4 ARR + 1
+static const uint16_t    tipChopPrescaler   = 20;                 // 8 MHz / (20+1) / 65 -> ~5.9 kHz; half the switching loss of the old 11 kHz
+static volatile uint16_t tipChopCompare     = tipChopPeriodTicks; // TIM4 CCR3 while the envelope is on; ARR+1 == solid on
+static uint16_t          tipChopDutyX256    = 256;
 
 static void applyTipChopPrescaler(void) {
-  uint8_t idx = getSettingValue(SettingsOptions::TipChopFrequency);
-  if (idx >= (sizeof(tipChopPrescalers) / sizeof(tipChopPrescalers[0]))) {
-    idx = 0;
-  }
-  if (htim4.Instance->PSC != tipChopPrescalers[idx]) {
-    htim4.Instance->PSC = tipChopPrescalers[idx];
+  if (htim4.Instance->PSC != tipChopPrescaler) {
+    htim4.Instance->PSC = tipChopPrescaler;
     htim4.Instance->EGR = TIM_EGR_UG; // Load the new prescaler now rather than at next update
   }
 }
 
-uint32_t getTipChopFrequencyHzX10() {
-  uint8_t idx = getSettingValue(SettingsOptions::TipChopFrequency);
-  if (idx >= (sizeof(tipChopPrescalers) / sizeof(tipChopPrescalers[0]))) {
-    idx = 0;
-  }
-  return (8000000UL * 10) / ((uint32_t)(tipChopPrescalers[idx] + 1) * tipChopPeriodTicks);
-}
+uint32_t getTipChopFrequencyHzX10() { return (8000000UL * 10) / ((uint32_t)(tipChopPrescaler + 1) * tipChopPeriodTicks); }
 
 uint16_t getTipChopDutyX256Latched() { return tipChopDutyX256; }
 

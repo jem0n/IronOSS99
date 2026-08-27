@@ -72,15 +72,25 @@ uint16_t getADCHandleTemp(uint8_t sample) {
   static history<uint16_t, ADC_FILTER_LEN> filter = {{0}, 0, 0};
   if (sample) {
     uint32_t sum = 0;
-    for (uint8_t i = 0; i < ADC_SAMPLES; i++) {
+    for (uint8_t i = 0; i < ADC_SAMPLES; i += 2) { // even slots: handle NTC (odd: MCU temperature sensor)
       sum += ADCReadings[i];
     }
-    filter.update(sum);
+    filter.update(sum * 2);
   }
   return filter.average() >> 1;
 #else
   return 0;
 #endif
+}
+
+int16_t getMCUTemperatureC(void) {
+  // STM32F1 internal sensor: V25 = 1.43 V, 4.3 mV / C, sampled into the odd DMA slots
+  uint32_t sum = 0;
+  for (uint8_t i = 1; i < ADC_SAMPLES; i += 2) {
+    sum += ADCReadings[i];
+  }
+  const int32_t senseMv = (int32_t)((sum / (ADC_SAMPLES / 2)) * 3300) / 4096;
+  return (int16_t)(((1430 - senseMv) * 10) / 43 + 25);
 }
 
 uint16_t getADCVin(uint8_t sample) {
@@ -171,7 +181,7 @@ static void MX_ADC1_Init(void) {
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv      = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign             = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion       = 1;
+  hadc1.Init.NbrOfConversion       = 2; // handle NTC + MCU temperature sensor, alternating in the DMA buffer
   HAL_ADC_Init(&hadc1);
 
 /**Configure Regular Channel
@@ -187,6 +197,13 @@ static void MX_ADC1_Init(void) {
   sConfig.SamplingTime = ADC_SAMPLETIME_71CYCLES_5;
   HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 #endif
+  // Internal temperature sensor on channel 16 (die temperature, last resort thermal cut-off).
+  // The trimmed HAL has no ADC_CHANNEL_TEMPSENSOR, so enable the sensor (TSVREFE) by hand.
+  sConfig.Channel      = ADC_CHANNEL_16;
+  sConfig.Rank         = ADC_REGULAR_RANK_2;
+  sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5; // needs >= 17.1 us
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+  SET_BIT(hadc1.Instance->CR2, ADC_CR2_TSVREFE);
   /**Configure Injected Channel
    */
   // F in = 10.66 MHz

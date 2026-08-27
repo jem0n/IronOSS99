@@ -472,14 +472,6 @@ On device help text:
 
 Select the tip type fitted
 
-### Setting: Chop freq
-
-Frequency in kHz of the fast output chopping used to keep the average tip current within the supply limit. Lower values run the MOSFET cooler but need a supply that tolerates longer current pulses.
-
-On device help text:
-
-Fast output chopping frequency for supply current limiting. Lower = cooler MOSFET, but the supply must tolerate longer current pulses.
-
 ### Setting: Buzzer
 
 Enable the buzzer: short beep when the set temperature is reached and at the end of a profile.

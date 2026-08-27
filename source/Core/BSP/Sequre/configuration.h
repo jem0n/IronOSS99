@@ -187,9 +187,9 @@
 #define DEBUG_POWER_MENU_BUTTON_B 1
 #define HAS_POWER_DEBUG_MENU
 #define TEMP_NTC
-#define I2C_SOFT_BUS_2   // For now we are doing software I2C to get around hardware chip issues
-#define I2C_PROBE_POW_PD // For now we are doing software I2C to get around hardware chip issues
-#define I2C_SOFT_BUS_1   // For now we are doing software I2C to get around hardware chip issues
+#define I2C_SOFT_BUS_2              // For now we are doing software I2C to get around hardware chip issues
+#define FS2711_CHECK_BOTH_I2C_BUSES // v1.2 boards moved the FS2711 to its own bus; probe both at boot
+#define I2C_SOFT_BUS_1              // For now we are doing software I2C to get around hardware chip issues
 #define OLED_I2CBB2
 #define FILTER_DISPLAYED_TIP_TEMP 4 // Filtering for GUI display
 
@@ -260,7 +260,8 @@
 #define USB_PD_TIMEOUT 1  // Default Timeout for USB-PD Protocol negotiation in x100ms
 
 #define HARDWARE_MAX_WATTAGE_X10     1300
-#define ENFORCE_HARDWARE_MAX_WATTAGE 1 // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
+#define MCU_TEMP_CUTOFF_C            85 // Die temperature above which the output is cut (treated like a thermal runaway)
+#define ENFORCE_HARDWARE_MAX_WATTAGE 1  // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
 
 #define TIP_THERMAL_MASS         8   // X10 watts to raise 1 deg C in 1 second
 #define TIP_THERMAL_INERTIA      128 // We use a large inertia value to smooth out the drive to the tip since its stupidly sensitive
@@ -276,7 +277,6 @@
 #define TIP_TYPE_SUPPORT          1  // Support for tips of different types, i.e. resistance
 #define TIPTYPE_C245              1  // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
 #define TIP_CURRENT_LIMIT_CHOP    1  // Envelope PWM for power, fast chop only for supply current limiting
-#define TIP_CHOP_FREQ_SETTING     1  // Expose the chop frequency as a user setting
 #define BUZZER_SETTING            1  // Expose the buzzer on/off as a user setting
 #define OLED_128x32_DENSE_UI      1  // Data dense detailed screens (needs the compact 6x8 font, ~1.5K of flash)
 #define HANDLE_DERATE_START_C     55 // Start reducing max power above this handle temperature
@@ -291,9 +291,9 @@
 #define DEBUG_POWER_MENU_BUTTON_B 1
 #define HAS_POWER_DEBUG_MENU
 #define TEMP_NTC
-#define I2C_SOFT_BUS_2   // For now we are doing software I2C to get around hardware chip issues
-#define I2C_PROBE_POW_PD // For now we are doing software I2C to get around hardware chip issues
-#define I2C_SOFT_BUS_1   // For now we are doing software I2C to get around hardware chip issues
+#define I2C_SOFT_BUS_2              // For now we are doing software I2C to get around hardware chip issues
+#define FS2711_CHECK_BOTH_I2C_BUSES // v1.5 boards moved the FS2711 to its own bus; probe both at boot
+#define I2C_SOFT_BUS_1              // For now we are doing software I2C to get around hardware chip issues
 #define OLED_I2CBB2
 #define FILTER_DISPLAYED_TIP_TEMP 4 // Filtering for GUI display
 

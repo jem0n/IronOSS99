@@ -41,10 +41,14 @@ void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM);
 // Fraction (x256) of the output on-time that the fast chop leaves the tip powered, so that the average
 // tip current stays within the supply limit. 256 == no chopping. Recomputes & latches the value used by the ISR.
 uint16_t getTipChopDutyX256();
-// Currently selected chop frequency in Hz x10 (for display)
+// Chop frequency in Hz x10 (for display)
 uint32_t getTipChopFrequencyHzX10();
 // Last latched chop duty (x256) without recomputing it; 256 == not chopping (for display)
 uint16_t getTipChopDutyX256Latched();
+#endif
+#ifdef MCU_TEMP_CUTOFF_C
+// MCU die temperature in C (internal sensor)
+int16_t getMCUTemperatureC(void);
 #endif
 // Returns the Handle temp in C, X10
 int16_t getHandleTemperature(uint8_t sample);

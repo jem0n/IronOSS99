@@ -11,7 +11,7 @@
 #include "Pins.h"
 #include "Setup.h"
 #include <I2C_Wrapper.hpp>
-#if defined(I2C_PROBE_POW_PD) && POW_PD_EXT == 2
+#if defined(FS2711_CHECK_BOTH_I2C_BUSES) && POW_PD_EXT == 2
 #include "FS2711.hpp"
 #endif
 
@@ -27,8 +27,8 @@ void preRToSInit() {
 #ifdef I2C_SOFT_BUS_2
   I2CBB2::init();
 #endif /* I2C_SOFT_BUS_2 */
-#if defined(I2C_PROBE_POW_PD) && POW_PD_EXT == 2
+#if defined(FS2711_CHECK_BOTH_I2C_BUSES) && POW_PD_EXT == 2
   // Detect and set FS2711 I2C bus num
   FS2711::detect_i2c_bus_num();
-#endif /* defined(I2C_PROBE_POW_PD) && POW_PD_EXT == 2 */
+#endif /* defined(FS2711_CHECK_BOTH_I2C_BUSES) && POW_PD_EXT == 2 */
 }

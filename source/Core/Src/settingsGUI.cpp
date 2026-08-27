@@ -49,10 +49,9 @@ static void displayScrollSpeed(void);
 static void displayReverseButtonTempChangeEnabled(void);
 static void displayReverseButtonSettings(void);
 static void displayPowerLimit(void);
-#ifdef TIP_CHOP_FREQ_SETTING
-static void displayTipChopFrequency(void);
+#ifdef BUZZER_SETTING
 static void displayBuzzerEnabled(void);
-#endif /* TIP_CHOP_FREQ_SETTING */
+#endif /* BUZZER_SETTING */
 
 #ifdef BLE_ENABLED
 static void displayBluetoothLE(void);
@@ -463,10 +462,6 @@ const menuitem advancedMenu[] = {
 #endif /* BLE_ENABLED */
   /* Power limit */
   {SETTINGS_DESC(SettingsItemIndex::PowerLimit), nullptr, displayPowerLimit, nullptr, SettingsOptions::PowerLimit, SettingsItemIndex::PowerLimit, 4},
-#ifdef TIP_CHOP_FREQ_SETTING
-  /* Fast chop frequency used for supply current limiting */
-  {SETTINGS_DESC(SettingsItemIndex::TipChopFrequency), nullptr, displayTipChopFrequency, nullptr, SettingsOptions::TipChopFrequency, SettingsItemIndex::TipChopFrequency, 4},
-#endif /* TIP_CHOP_FREQ_SETTING */
   /* Calibrate Cold Junktion Compensation at next boot */
   {SETTINGS_DESC(SettingsItemIndex::CalibrateCJC), setCalibrate, displayCalibrate, nullptr, SettingsOptions::CalibrateCJC, SettingsItemIndex::CalibrateCJC, 7},
   /* Voltage input cal */
@@ -1019,16 +1014,6 @@ static void displayBluetoothLE(void) {
   }
 }
 #endif /* BLE_ENABLED */
-
-#ifdef TIP_CHOP_FREQ_SETTING
-static void displayTipChopFrequency(void) {
-  // Shown in kHz with one decimal
-  uint16_t kHzX10 = getTipChopFrequencyHzX10() / 100;
-  OLED::printNumber(kHzX10 / 10, 2, VALUE_FONT);
-  OLED::print(VALUE_SYMBOL(Dot), VALUE_FONT);
-  OLED::printNumber(kHzX10 % 10, 1, VALUE_FONT);
-}
-#endif /* TIP_CHOP_FREQ_SETTING */
 
 static void displayPowerLimit(void) {
   if (getSettingValue(SettingsOptions::PowerLimit) == 0) {

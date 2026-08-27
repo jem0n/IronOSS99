@@ -4,7 +4,9 @@
 #include "BSP.h"
 #include "FS2711.hpp"
 #include "FS2711_defines.h"
+#ifdef FS2711_CHECK_BOTH_I2C_BUSES
 #include "I2CBB1.hpp"
+#endif
 #include "I2CBB2.hpp"
 #include "Settings.h"
 #include "Utils.hpp"
@@ -19,38 +21,46 @@
 
 extern int32_t powerSupplyWattageLimit;
 
-uint8_t selected_i2c_port = 2;
+#ifdef FS2711_CHECK_BOTH_I2C_BUSES
+// Two hardware revisions: the FS2711 sits either on bus 1 (shared with the OLED) or, on newer
+// boards (S99 v1.5, S60P v1.2), on its own bus 2. Which one is found at boot is remembered here.
+static uint8_t selected_i2c_port = 2;
+#endif
 
 fs2711_state_t FS2711::state;
 
 void i2c_write(uint8_t addr, uint8_t data) {
-  if (selected_i2c_port == 2) {
-    I2CBB2::Mem_Write(FS2711_ADDR, addr, &data, 1);
-  } else if (selected_i2c_port == 1) {
+#ifdef FS2711_CHECK_BOTH_I2C_BUSES
+  if (selected_i2c_port == 1) {
     I2CBB1::Mem_Write(FS2711_ADDR, addr, &data, 1);
+    return;
   }
+#endif
+  I2CBB2::Mem_Write(FS2711_ADDR, addr, &data, 1);
 }
 
 uint8_t i2c_read(uint8_t addr) {
   uint8_t data = 0;
-  if (selected_i2c_port == 2) {
-    I2CBB2::Mem_Read(FS2711_ADDR, addr, &data, 1);
-  } else if (selected_i2c_port == 1) {
+#ifdef FS2711_CHECK_BOTH_I2C_BUSES
+  if (selected_i2c_port == 1) {
     I2CBB1::Mem_Read(FS2711_ADDR, addr, &data, 1);
+    return data;
   }
+#endif
+  I2CBB2::Mem_Read(FS2711_ADDR, addr, &data, 1);
   return data;
 }
 
 bool i2c_probe(uint8_t addr) {
-  bool probing_state = false;
-  if (selected_i2c_port == 2) {
-    probing_state = I2CBB2::probe(addr);
-  } else if (selected_i2c_port == 1) {
-    probing_state = I2CBB1::probe(addr);
+#ifdef FS2711_CHECK_BOTH_I2C_BUSES
+  if (selected_i2c_port == 1) {
+    return I2CBB1::probe(addr);
   }
-  return probing_state;
+#endif
+  return I2CBB2::probe(addr);
 }
 
+#ifdef FS2711_CHECK_BOTH_I2C_BUSES
 // Two unused addresses just below the FS2711. Probing them first gives the bus a couple of
 // throw-away start/address/stop cycles before the real probe: straight after power up the
 // first transaction to the FS2711 was seen to go un-ACKed, which would wrongly select bus 1.
@@ -58,7 +68,6 @@ static const uint8_t FS2711_WAKE_PROBE_ADDR_1 = FS2711_ADDR - 2; // 0x58
 static const uint8_t FS2711_WAKE_PROBE_ADDR_2 = FS2711_ADDR - 1; // 0x59
 
 uint8_t FS2711::detect_i2c_bus_num() {
-  // Newer boards (S99 v1.5, S60P v1.2) have the FS2711 on its own bus (bus 2); older ones share bus 1 with the OLED.
   I2CBB2::probe(FS2711_WAKE_PROBE_ADDR_1);
   I2CBB2::probe(FS2711_WAKE_PROBE_ADDR_2);
   if (I2CBB2::probe(FS2711_ADDR)) {
@@ -68,6 +77,7 @@ uint8_t FS2711::detect_i2c_bus_num() {
   }
   return selected_i2c_port;
 }
+#endif /* FS2711_CHECK_BOTH_I2C_BUSES */
 
 void FS2711::start() {
   memset(&state, 0, sizeof(fs2711_state_t));
