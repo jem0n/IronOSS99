@@ -144,7 +144,7 @@
 #define TIP_RESISTANCE 20 //(actually 2.5 ish but we need to be more conservative on pwm'ing watt limit) x10 ohms
 
 #define OLED_128x32
-// No OLED_128x32_DENSE_UI here: 45K of application flash, the CJK builds would not fit (see the S60P note)
+// OLED_128x32_DENSE_UI is set per language by build.sh (all but CJK): 45K of flash, see the S60P note
 #define GPIO_VIBRATION
 #define POW_PD_EXT                1
 #define USB_PD_EPR_WATTAGE        0 /*No EPR*/
@@ -160,9 +160,10 @@
 
 /*
  * OLED_128x32_DENSE_UI: the data dense detailed screens plus the compact 6x8 font (~1.5K of flash).
- * Only enabled on models with room for it: S60P (126K) and S99 (78K). The S60 and T55 have 45K of
+ * The S60P (126K) and S99 (78K) enable it here for every language. The S60 and T55 only have 45K of
  * application flash after the bootloader and their CJK builds already sit within 1K of that limit
- * (ZH_CN would overflow by ~1K / ~1.4K), so they keep the upstream 128x32 layout.
+ * (ZH_CN would overflow by ~1K / ~1.4K), so for those two models build.sh passes DENSE_UI=1 to make
+ * for every language except JA_JP / YUE_HK / ZH_CN / ZH_TW, which keep the default 128x32 layout.
  */
 #ifdef MODEL_S60P
 #define VOLTAGE_DIV        460 // Default divider scaler
@@ -241,7 +242,7 @@
 #define CUSTOM_MAX_TEMP_C
 #define PROFILE_SUPPORT 1 // Soldering Profiles
 #define OLED_128x32     1 // Larger OLED
-// No OLED_128x32_DENSE_UI here: 45K of application flash, the CJK builds would not fit (see the S60P note)
+// OLED_128x32_DENSE_UI is set per language by build.sh (all but CJK): 45K of flash, see the S60P note
 #define OLED_FLIP                 1 // Mounted upside down
 #define POW_PD_EXT                1 // Older HUB238
 #define USB_PD_EPR_WATTAGE        0 /*No EPR*/
