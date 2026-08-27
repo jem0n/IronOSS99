@@ -2,7 +2,7 @@
 #include "ui_drawing.hpp"
 #include <OperatingModes.h>
 #ifdef OLED_128x32
-#ifdef OLED_128x32_DENSE_UI
+#ifdef OLED_128x32_DENSE_UI // dense layout + compact font, only on models with the flash for it (see Sequre configuration.h)
 
 // [heat / boost column 16px][LARGE temp + °C 48px][info column: 20.0V / source / set point in the 6x8 font]
 // The side columns swap over for left handed mode so the heat indicator stays next to the buttons.

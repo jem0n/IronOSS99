@@ -3,7 +3,7 @@
 #include "ui_drawing.hpp"
 #include <OperatingModes.h>
 #ifdef OLED_128x32
-#ifdef OLED_128x32_DENSE_UI
+#ifdef OLED_128x32_DENSE_UI // dense layout + compact font, only on models with the flash for it (see Sequre configuration.h)
 
 /*
  * Detailed soldering view (right handed; the two blocks swap for left handed):

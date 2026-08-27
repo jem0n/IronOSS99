@@ -144,6 +144,7 @@
 #define TIP_RESISTANCE 20 //(actually 2.5 ish but we need to be more conservative on pwm'ing watt limit) x10 ohms
 
 #define OLED_128x32
+// No OLED_128x32_DENSE_UI here: 45K of application flash, the CJK builds would not fit (see the S60P note)
 #define GPIO_VIBRATION
 #define POW_PD_EXT                1
 #define USB_PD_EPR_WATTAGE        0 /*No EPR*/
@@ -157,6 +158,12 @@
 #define MODEL_HAS_DCDC // We dont have DC/DC but have reallly fast PWM that gets us roughly the same place
 #endif                 /* S60 */
 
+/*
+ * OLED_128x32_DENSE_UI: the data dense detailed screens plus the compact 6x8 font (~1.5K of flash).
+ * Only enabled on models with room for it: S60P (126K) and S99 (78K). The S60 and T55 have 45K of
+ * application flash after the bootloader and their CJK builds already sit within 1K of that limit
+ * (ZH_CN would overflow by ~1K / ~1.4K), so they keep the upstream 128x32 layout.
+ */
 #ifdef MODEL_S60P
 #define VOLTAGE_DIV        460 // Default divider scaler
 #define CALIBRATION_OFFSET 200 // Default adc offset in uV
@@ -179,7 +186,7 @@
 #define TIP_RESISTANCE 20 //(actually 2.5 ish but we need to be more conservative on pwm'ing watt limit) x10 ohms
 
 #define OLED_128x32
-#define OLED_128x32_DENSE_UI 1 // Data dense detailed screens (126K flash, plenty of room)
+#define OLED_128x32_DENSE_UI 1 // See the note above the S60P block: enabled where the flash allows it
 #define GPIO_VIBRATION
 #define POW_PD_EXT         2
 #define USB_PD_EPR_WATTAGE 0 /*No EPR*/
@@ -232,8 +239,9 @@
 #define COPPER_HEATER_COIL 1  // Have a heater coil that changes resistance on us
 #define TIP_RESISTANCE     52 // PCB heater, measured at ~19C. Will shift by temp a decent amount
 #define CUSTOM_MAX_TEMP_C
-#define PROFILE_SUPPORT           1 // Soldering Profiles
-#define OLED_128x32               1 // Larger OLED
+#define PROFILE_SUPPORT 1 // Soldering Profiles
+#define OLED_128x32     1 // Larger OLED
+// No OLED_128x32_DENSE_UI here: 45K of application flash, the CJK builds would not fit (see the S60P note)
 #define OLED_FLIP                 1 // Mounted upside down
 #define POW_PD_EXT                1 // Older HUB238
 #define USB_PD_EPR_WATTAGE        0 /*No EPR*/
@@ -278,7 +286,7 @@
 #define TIPTYPE_C245              1  // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
 #define TIP_CURRENT_LIMIT_CHOP    1  // Envelope PWM for power, fast chop only for supply current limiting
 #define BUZZER_SETTING            1  // Expose the buzzer on/off as a user setting
-#define OLED_128x32_DENSE_UI      1  // Data dense detailed screens (needs the compact 6x8 font, ~1.5K of flash)
+#define OLED_128x32_DENSE_UI      1  // See the note above the S60P block: enabled where the flash allows it
 #define HANDLE_DERATE_START_C     55 // Start reducing max power above this handle temperature
 #define HANDLE_DERATE_END_C       70 // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
 #define HANDLE_DERATE_MIN_PERCENT 20
