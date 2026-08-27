@@ -83,8 +83,13 @@ uint16_t getADCHandleTemp(uint8_t sample) {
 #endif
 }
 
-int16_t getMCUTemperatureC(void) {
-  // STM32F1 internal sensor: V25 = 1.43 V, 4.3 mV / C, sampled into the odd DMA slots
+// STM32F1 internal temperature sensor, sampled into the odd DMA slots. The slope (4.3 mV / C) is
+// tight but V25 varies from 1.34 to 1.52 V between chips (+-20 C if the datasheet value is used
+// blindly), so the reading is referenced to the handle NTC once at boot instead: the die and the
+// handle are at the same temperature after a cold start, and from there on only the rise matters.
+static int16_t mcuTempOffsetC = 0;
+
+static int16_t mcuTemperatureUncalibratedC(void) {
   uint32_t sum = 0;
   for (uint8_t i = 1; i < ADC_SAMPLES; i += 2) {
     sum += ADCReadings[i];
@@ -92,6 +97,10 @@ int16_t getMCUTemperatureC(void) {
   const int32_t senseMv = (int32_t)((sum / (ADC_SAMPLES / 2)) * 3300) / 4096;
   return (int16_t)(((1430 - senseMv) * 10) / 43 + 25);
 }
+
+void calibrateMCUTemperature(int16_t handleTemperatureC) { mcuTempOffsetC = handleTemperatureC - mcuTemperatureUncalibratedC(); }
+
+int16_t getMCUTemperatureC(void) { return mcuTemperatureUncalibratedC() + mcuTempOffsetC; }
 
 uint16_t getADCVin(uint8_t sample) {
   static history<uint16_t, ADC_FILTER_LEN> filter = {{0}, 0, 0};

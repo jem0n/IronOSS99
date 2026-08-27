@@ -27,6 +27,7 @@ void                     Setup_HAL();
 uint16_t                 getADCHandleTemp(uint8_t sample);
 uint16_t                 getADCVin(uint8_t sample);
 int16_t                  getMCUTemperatureC(void);
+void                     calibrateMCUTemperature(int16_t handleTemperatureC);
 void                     HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim); // Since the hal header file does not define this one
 
 #ifdef __cplusplus

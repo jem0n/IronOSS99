@@ -47,8 +47,9 @@ uint32_t getTipChopFrequencyHzX10();
 uint16_t getTipChopDutyX256Latched();
 #endif
 #ifdef MCU_TEMP_CUTOFF_C
-// MCU die temperature in C (internal sensor)
+// MCU die temperature in C (internal sensor), referenced to the handle temperature at boot
 int16_t getMCUTemperatureC(void);
+void    calibrateMCUTemperature(int16_t handleTemperatureC);
 #endif
 // Returns the Handle temp in C, X10
 int16_t getHandleTemperature(uint8_t sample);

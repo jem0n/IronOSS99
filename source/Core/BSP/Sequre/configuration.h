@@ -269,7 +269,7 @@
 #define USB_PD_TIMEOUT 1  // Default Timeout for USB-PD Protocol negotiation in x100ms
 
 #define HARDWARE_MAX_WATTAGE_X10     1300
-#define MCU_TEMP_CUTOFF_C            85 // Die temperature above which the output is cut (treated like a thermal runaway)
+#define MCU_TEMP_CUTOFF_C            95 // Die temperature (referenced to the handle NTC at boot) above which the output is cut
 #define ENFORCE_HARDWARE_MAX_WATTAGE 1  // Always cap the PID output at HARDWARE_MAX_WATTAGE_X10 (also on DC input, where there is no PD supply limit)
 
 #define TIP_THERMAL_MASS         8   // X10 watts to raise 1 deg C in 1 second

@@ -71,6 +71,11 @@ void startPIDTask(void const *argument __unused) {
 #endif
 #endif
 
+#ifdef MCU_TEMP_CUTOFF_C
+  // Reference the die temperature sensor to the handle NTC now that the ADC has samples (cold boot: same temperature)
+  calibrateMCUTemperature(getHandleTemperature(0) / 10);
+#endif
+
   int32_t    x10WattsOut             = 0;
   TickType_t lastThermalRunawayDecay = xTaskGetTickCount();
 
