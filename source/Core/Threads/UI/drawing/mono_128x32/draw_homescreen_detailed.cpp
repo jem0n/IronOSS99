@@ -44,7 +44,7 @@ void ui_draw_homescreen_detailed(TemperatureType_t tipTemp) {
   OLED::setCursor(mainX, 16);
   OLED::print(SmallSymbolSpace, FontStyle::TINY);
   OLED::printNumber(getSettingValue(SettingsOptions::SolderingTemp), 3, FontStyle::TINY);
-  OLED::printSymbolDeg(FontStyle::TINY);
+  OLED::print(SmallSymbolDegreeSign, FontStyle::TINY);
   OLED::setCursor(mainX, 24);
   OLED::print(PowerSourceNames[getPowerSourceNumber()], FontStyle::TINY, 2);
   OLED::print(SmallSymbolSpace, FontStyle::TINY);
@@ -59,7 +59,7 @@ void ui_draw_homescreen_detailed(TemperatureType_t tipTemp) {
   // Info block
   OLED::setCursor(infoX, 0);
   OLED::printNumber(getHandleTemperature(0) / 10, 2, FontStyle::TINY);
-  OLED::printSymbolDeg(FontStyle::TINY);
+  OLED::print(SmallSymbolDegreeSign, FontStyle::TINY);
   OLED::print(SmallSymbolSpace, FontStyle::TINY);
   {
     uint8_t tipRx10 = getTipResistanceX10();

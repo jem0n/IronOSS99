@@ -85,7 +85,7 @@ void ui_draw_soldering_power_status(bool boost_mode_on) {
     OLED::print(SmallSymbolSpace, FontStyle::TINY);
     OLED::printNumber(getSettingValue(SettingsOptions::SolderingTemp), 3, FontStyle::TINY);
   }
-  OLED::printSymbolDeg(FontStyle::TINY);
+  OLED::print(SmallSymbolDegreeSign, FontStyle::TINY);
 #ifndef NO_SLEEP_MODE
   if (!boost_mode_on && getSettingValue(SettingsOptions::Sensitivity) && getSettingValue(SettingsOptions::SleepTime)) {
     OLED::setCursor(mainX + 36, 24);
@@ -107,7 +107,7 @@ void ui_draw_soldering_power_status(bool boost_mode_on) {
   OLED::print(PowerSourceNames[getPowerSourceNumber()], FontStyle::TINY, 2);
   OLED::print(SmallSymbolSpace, FontStyle::TINY);
   OLED::printNumber(getHandleTemperature(0) / 10, 2, FontStyle::TINY);
-  OLED::printSymbolDeg(FontStyle::TINY);
+  OLED::print(SmallSymbolDegreeSign, FontStyle::TINY); // "PD 41° 2.3A" is exactly the 11 cells of the info column
   OLED::print(SmallSymbolSpace, FontStyle::TINY);
   {
     uint32_t ampsX10 = voltX10 ? (x10Watt * 10) / voltX10 : 0;

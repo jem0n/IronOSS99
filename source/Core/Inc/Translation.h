@@ -25,6 +25,7 @@ extern const char *SmallSymbolLessThan;
 extern const char *SmallSymbolKiloHertz;
 extern const char *SmallSymbolMax;
 extern const char *SmallSymbolPercent;
+extern const char *SmallSymbolDegreeSign; // bare degree sign for the compact status rows
 extern const char *LargeSymbolAmps;
 extern const char *SmallSymbolDot;
 extern const char *LargeSymbolDot;

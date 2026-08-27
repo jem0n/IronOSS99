@@ -42,7 +42,7 @@ void ui_draw_soldering_basic_status(bool boostModeOn) {
   OLED::setCursor(infoX, 16);
   OLED::print(SmallSymbolSpace, FontStyle::TINY);
   OLED::printNumber(getSettingValue(boostModeOn ? SettingsOptions::BoostTemp : SettingsOptions::SolderingTemp), 3, FontStyle::TINY);
-  OLED::printSymbolDeg(FontStyle::TINY);
+  OLED::print(SmallSymbolDegreeSign, FontStyle::TINY);
 }
 
 #else  /* upstream layout */

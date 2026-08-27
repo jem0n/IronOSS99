@@ -146,6 +146,7 @@ def get_constants() -> List[Tuple[str, str]]:
         ("SmallSymbolKiloHertz", "kHz"),
         ("SmallSymbolMax", "Max"),
         ("SmallSymbolPercent", "%"),
+        ("SmallSymbolDegreeSign", "°"),
         ("LargeSymbolDC", "DC"),
         ("SmallSymbolDC", "DC"),
         ("LargeSymbolCellCount", "S"),
