@@ -189,7 +189,7 @@ settings:
     max: 2
     min: 0
     name: BluetoothLE
-  - default: 0
+  - default: 1
     increment: 1
     max: 2
     min: 0
@@ -269,7 +269,7 @@ settings:
     max: 12
     min: 0
     name: HallEffectSleepTime
-  - default: 0
+  - default: 1
     increment: 1
     max: "(tipType_t::TIP_TYPE_MAX - 1) > 0 ? (tipType_t::TIP_TYPE_MAX - 1) : 0"
     min: 0
