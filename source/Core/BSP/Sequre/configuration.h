@@ -278,9 +278,9 @@
 #define THERMAL_RUNAWAY_TEMP_C   10
 
 /*
- * Tip drive: no inductor, so the fast chop only runs when the supply can't deliver the full tip
- * current, and only inside the 20 Hz PWM on-time. See BSP.cpp. Cartridge resistance is a setting
- * (stock 5.5 ohm / JBC 2.5 ohm), power is derated when the handle gets hot.
+ * Tip drive: no inductor, so like the S60 the tip is driven with a fast PWM whose duty is the PID output;
+ * TIP_CURRENT_LIMIT_CHOP additionally caps that duty at the supply current limit (see BSP.cpp).
+ * Cartridge resistance is a setting (stock 5.5 ohm / JBC 2.5 ohm), power is derated when the handle gets hot.
  */
 #define TIP_RESISTANCE            55   // x10 ohms; stock 5.5 ohm cartridge
 #define TIP_TYPE_SUPPORT          1    // Support for tips of different types, i.e. resistance
@@ -307,7 +307,7 @@
 #define OLED_I2CBB2
 #define FILTER_DISPLAYED_TIP_TEMP 4 // Filtering for GUI display
 
-#define MODEL_HAS_DCDC // No DC/DC, but the fast chop keeps the average current within the supply limit so PD can pick max voltage
+#define MODEL_HAS_DCDC // No DC/DC, but the fast PWM (duty capped at the supply current) behaves like one, so PD can pick max voltage
 #endif                 /* S99 */
 
 #ifdef MODEL_S60P

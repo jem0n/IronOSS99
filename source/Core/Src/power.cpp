@@ -52,10 +52,6 @@ uint32_t availableW10(uint8_t sample) {
   // avMw=(AvMw*powerPWM)/totalPWM.
   availableWattsX10 = availableWattsX10 * powerPWM;
   availableWattsX10 /= totalPWM;
-#ifdef TIP_CURRENT_LIMIT_CHOP
-  // The fast chop that keeps the average current within the supply limit also scales the power we can deliver
-  availableWattsX10 = (availableWattsX10 * getTipChopDutyX256()) / 256;
-#endif
 
   // availableMilliWattsX10 is now an accurate representation
   return availableWattsX10;

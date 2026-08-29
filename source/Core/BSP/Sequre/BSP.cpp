@@ -101,20 +101,16 @@ static void switchToFastPWM(void) {
 
 #ifdef TIP_CURRENT_LIMIT_CHOP
 /*
- * The S99 has no inductor, so tip current can only be limited by chopping the output.
- *
- * TIM2 (~20 Hz) is the normal PWM envelope that the PID controls: on for pendingPWM ticks,
- * then off for the holdoff + ADC window. Same as every other iron.
- *
- * TIM4 runs the fast chop, but only while the envelope is on, and only at the duty that
- * keeps the average current under the supply limit (I_limit / I_tip). If the supply can
- * handle the full tip current, TIM4 stays at 100% and the FET only switches at 20 Hz.
- *
- * Switching 8 A at 11 kHz all the time is what overheated the FET before.
+ * The S99 has no inductor, so the tip is driven the same way as the S60: TIM4 runs a fast PWM whose duty
+ * is the PID output, TIM2 only frames the ADC measurement window. On top of that the duty is capped at
+ * I_limit / I_tip so the average current can never exceed what the supply allows (negotiated PDO, or the
+ * user power limit on DC) - the S60 relies on the supply wattage limit in the PID for that, which leaves
+ * the cold start uncovered. Realising the power as bursts (a 20 Hz envelope with the chop inside) was
+ * tried first and trips the over-current protection of some chargers, so it is deliberately not done.
  */
 static const uint16_t    tipChopPeriodTicks = 64 + 1;             // TIM4 ARR + 1
 static const uint16_t    tipChopPrescaler   = 20;                 // 8 MHz / (20+1) / 65 -> ~5.9 kHz; half the switching loss of the old 11 kHz
-static volatile uint16_t tipChopCompare     = tipChopPeriodTicks; // TIM4 CCR3 while the envelope is on; ARR+1 == solid on
+static volatile uint16_t tipDutyCapTicks    = tipChopPeriodTicks; // Largest TIM4 CCR3 the supply allows; ARR+1 == no limit
 static uint16_t          tipChopDutyX256    = 256;
 
 static void applyTipChopPrescaler(void) {
@@ -155,76 +151,36 @@ uint16_t getTipChopDutyX256() {
 
   uint32_t dutyX256 = 256;
   if (limitx100 && tipCurrentx100 > limitx100) {
-    dutyX256 = (limitx100 * 256) / tipCurrentx100;
+    // 10 % margin: the cartridge is below its nominal resistance when cold, and the meters / protections
+    // on the supply side see the peaks, not just the average
+    dutyX256 = (limitx100 * 256 * 9) / (tipCurrentx100 * 10);
     if (dutyX256 < 8) {
       dutyX256 = 8; // ~3 %, keeps the output alive so the tip still gets measured meaningfully
     }
   }
   tipChopDutyX256 = dutyX256;
 
-  uint16_t compare = tipChopPeriodTicks;
+  uint16_t cap = tipChopPeriodTicks;
   if (dutyX256 < 256) {
-    compare = (dutyX256 * tipChopPeriodTicks) / 256;
-    if (compare < 1) {
-      compare = 1;
+    cap = (dutyX256 * tipChopPeriodTicks) / 256;
+    if (cap < 1) {
+      cap = 1;
     }
   }
-  tipChopCompare = compare;
+  tipDutyCapTicks = cap;
   applyTipChopPrescaler();
   return tipChopDutyX256;
 }
+#endif /* TIP_CURRENT_LIMIT_CHOP */
 
 void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM) {
   (void)shouldUseFastModePWM;
   PWMSafetyTimer = 20; // This is decremented in the handler for PWM so that the tip pwm is
                        // disabled if the PID task is not scheduled often enough.
   pendingPWM = pulse;
-}
-// These are called by the HAL after the corresponding events from the system
-// timers.
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-  // Period has elapsed
-  if (htim->Instance == TIM2) {
-    // Start of a new envelope period
-    if (PWMSafetyTimer) {
-      PWMSafetyTimer--;
-    }
-    // We decrement this safety value so that lockups in the
-    // scheduler will not cause the PWM to become locked in an
-    // active driving state.
-    if (PWMSafetyTimer == 0 || pendingPWM == 0) {
-      htim2.Instance->CCR4 = 0;
-      htim4.Instance->CCR3 = 0;
-    } else {
-      htim2.Instance->CCR4 = pendingPWM;     // Envelope on-time, always < holdoff / ADC trigger point
-      htim4.Instance->CCR3 = tipChopCompare; // Chop only as hard as the supply needs
-    }
-  } else if (htim->Instance == TIM1) {
-    // STM uses this for internal functions as a counter for timeouts
-    HAL_IncTick();
-  }
-#ifdef BUZZER_Pin
-  else if (htim->Instance == TIM3) {
-    // Buzzer tone: square wave on a plain GPIO
-    HAL_GPIO_TogglePin(BUZZER_GPIO_Port, BUZZER_Pin);
-  }
+#ifdef TIP_CURRENT_LIMIT_CHOP
+  getTipChopDutyX256(); // Re-evaluate the supply current cap every PID cycle (voltage / PDO / user limit can change)
 #endif
-}
-
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
-  // End of the envelope on-time
-  if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-    htim4.Instance->CCR3 = 0;
-  }
-}
-
-#else /* !TIP_CURRENT_LIMIT_CHOP : original always-chop scheme (S60 / S60P / T55) */
-
-void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM) {
-  PWMSafetyTimer = 20; // This is decremented in the handler for PWM so that the tip pwm is
-                       // disabled if the PID task is not scheduled often enough.
-  pendingPWM = pulse;
 }
 // These are called by the HAL after the corresponding events from the system
 // timers.
@@ -233,7 +189,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   // Period has elapsed
   if (htim->Instance == TIM2) {
     // we want to turn on the output again
-    PWMSafetyTimer--;
+    if (PWMSafetyTimer) {
+      PWMSafetyTimer--;
+    }
     // We decrement this safety value so that lockups in the
     // scheduler will not cause the PWM to become locked in an
     // active driving state.
@@ -242,7 +200,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (PWMSafetyTimer == 0) {
       htim4.Instance->CCR3 = 0;
     } else {
-      htim4.Instance->CCR3 = pendingPWM / 4;
+      uint16_t duty = pendingPWM / 4; // 0..63 of the 65 tick fast PWM period
+#ifdef TIP_CURRENT_LIMIT_CHOP
+      if (duty > tipDutyCapTicks) {
+        duty = tipDutyCapTicks; // never draw more than the supply can deliver, whatever the PID asks for
+      }
+#endif
+      htim4.Instance->CCR3 = duty;
     }
   } else if (htim->Instance == TIM1) {
     // STM uses this for internal functions as a counter for timeouts
@@ -257,13 +221,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
-  // This was a when the PWM for the output has timed out
+  // End of the drive window: output off while the ADC samples the tip
   if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-    // HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
     htim4.Instance->CCR3 = 0;
   }
 }
-#endif /* TIP_CURRENT_LIMIT_CHOP */
 
 void unstick_I2C() {}
 
