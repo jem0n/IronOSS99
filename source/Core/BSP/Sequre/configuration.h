@@ -15,8 +15,8 @@
  * Temperature the iron sleeps at - default 150.0 C
  */
 
-#define SLEEP_TEMP         150 // Default sleep temperature
-#define BOOST_TEMP         420 // Default boost temp.
+#define SLEEP_TEMP         40 // Default sleep temperature
+#define BOOST_TEMP         380 // Default boost temp.
 #define BOOST_MODE_ENABLED 1   // 0: Disable 1: Enable
 
 /**
@@ -31,14 +31,14 @@
 /**
  * Blink the temperature on the cooling screen when its > 50C
  */
-#define COOLING_TEMP_BLINK 0 // 0: Disable 1: Enable
+#define COOLING_TEMP_BLINK 1 // 0: Disable 1: Enable
 
 /**
  * How many seconds/minutes we wait until going to sleep/shutdown.
  * Values -> SLEEP_TIME * 10; i.e. 5*10 = 50 Seconds!
  */
-#define SLEEP_TIME    5  // x10 Seconds
-#define SHUTDOWN_TIME 10 // Minutes
+#define SLEEP_TIME    4  // x10 Seconds
+#define SHUTDOWN_TIME 1 // Minutes
 
 /**
  * Auto start off for safety.
@@ -71,8 +71,8 @@
 /**
  * Temp change settings
  */
-#define TEMP_CHANGE_SHORT_STEP     1  // Default temp change short step +1
-#define TEMP_CHANGE_LONG_STEP      10 // Default temp change long step +10
+#define TEMP_CHANGE_SHORT_STEP     10  // Default temp change short step +1
+#define TEMP_CHANGE_LONG_STEP      20 // Default temp change long step +10
 #define TEMP_CHANGE_SHORT_STEP_MAX 50 // Temp change short step MAX value
 #define TEMP_CHANGE_LONG_STEP_MAX  90 // Temp change long step MAX value
 
@@ -90,14 +90,14 @@
  * OLED Orientation Sensitivity on Automatic mode!
  * Motion Sensitivity <0=Off 1=Least Sensitive 9=Most Sensitive>
  */
-#define SENSITIVITY 7 // Default 7
+#define SENSITIVITY 9 // Default 7
 
 /**
  * Detailed soldering screen
  * Detailed idle screen (off for first time users)
  */
-#define DETAILED_SOLDERING 0 // 0: Disable 1: Enable - Default 0
-#define DETAILED_IDLE      0 // 0: Disable 1: Enable - Default 0
+#define DETAILED_SOLDERING 1 // 0: Disable 1: Enable - Default 0
+#define DETAILED_IDLE      1 // 0: Disable 1: Enable - Default 0
 
 #define CUT_OUT_SETTING          0  // default to no cut-off voltage
 #define RECOM_VOL_CELL           33 // Minimum voltage per cell (Recommended 3.3V (33))
@@ -282,9 +282,9 @@
  * current, and only inside the 20 Hz PWM on-time. See BSP.cpp. Cartridge resistance is a setting
  * (stock 5.5 ohm / JBC 2.5 ohm), power is derated when the handle gets hot.
  */
-#define TIP_RESISTANCE            55   // x10 ohms; stock 5.5 ohm cartridge
+#define TIP_RESISTANCE            25   // x10 ohms; stock 5.5 ohm cartridge
 #define TIP_TYPE_SUPPORT          1    // Support for tips of different types, i.e. resistance
-#define TIPTYPE_C245              1    // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
+#define TIPTYPE_C245              2    // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
 #define TIP_CURRENT_LIMIT_CHOP    1    // Envelope PWM for power, fast chop only for supply current limiting
 #define TIP_CHOP_FREQ_SETTING     1    // Expose the chop frequency as a user setting
 #define BUZZER_SETTING            1    // Expose the buzzer on/off as a user setting
