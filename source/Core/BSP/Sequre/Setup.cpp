@@ -344,13 +344,13 @@ static void MX_TIM3_Init(void) {
 #ifdef BUZZER_Pin
   /*
    * The buzzer is a passive piezo on a plain GPIO, so we generate the tone in software:
-   * TIM3 update interrupts toggle the pin. 8 MHz / (7+1) = 1 MHz, / (184+1) = 5405 Hz toggles -> ~2.7 kHz tone.
+   * TIM3 update interrupts toggle the pin at 2 x BUZZER_FREQ_HZ (see configuration.h).
    * The timer is only running while the buzzer is on (see setBuzzer()).
    */
   htim3.Instance               = TIM3;
-  htim3.Init.Prescaler         = 7;
+  htim3.Init.Prescaler         = 7; // 8 MHz / 8 = 1 MHz timer clock
   htim3.Init.CounterMode       = TIM_COUNTERMODE_UP;
-  htim3.Init.Period            = 184;
+  htim3.Init.Period            = (1000000UL / (2UL * BUZZER_FREQ_HZ)) - 1; // two toggles per period
   htim3.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   htim3.Init.RepetitionCounter = 0;
