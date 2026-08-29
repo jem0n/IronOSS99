@@ -78,9 +78,10 @@ enum SettingsOptions {
   HallEffectSleepTime            = 53, // Seconds (/5) timeout to sleep when hall effect over threshold
   SolderingTipType               = 54, // Selecting the type of soldering tip fitted
   ReverseButtonSettings          = 55, // Change the A and B button assigment in Settings menu
-  BuzzerEnabled                  = 56, // Buzzer on/off (devices with a buzzer)
+  TipChopFrequency               = 56, // Fast chop frequency index used for supply current limiting (TIP_CURRENT_LIMIT_CHOP)
+  BuzzerEnabled                  = 57, // Buzzer on/off (devices with a buzzer)
   //
-  SettingsOptionsLength = 57, // End marker
+  SettingsOptionsLength = 58, // End marker
 };
 
 // For every setting we need to store the min/max/increment values
