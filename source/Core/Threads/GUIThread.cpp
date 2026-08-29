@@ -83,6 +83,14 @@ OperatingMode guiHandleDraw(void) {
   case OperatingMode::StartupLogo:
     showBootLogo();
 
+#ifdef BUZZER_SETTING
+    // Short start-up chirp (the stock firmware plays a melody). Done here rather than in postRToSInit(): that runs
+    // right before the USB-PD negotiation starts, and delaying it there makes strict sources hard-reset VBUS.
+    setBuzzer(true);
+    osDelay(TICKS_100MS);
+    setBuzzer(false);
+#endif
+
     if (getSettingValue(SettingsOptions::AutoStartMode) == autoStartMode_t::SLEEP) {
       lastMovementTime = lastButtonTime = 0; // We mask the values so that sleep goes until user moves again or presses a button
       newMode                           = OperatingMode::Sleeping;
