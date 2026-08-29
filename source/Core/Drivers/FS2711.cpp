@@ -260,7 +260,15 @@ void FS2711::negotiate() {
           const uint32_t by_supply_mw = (v_mv * pdo_max_curr) / 1000;                    // V * I
           const uint32_t deliverable  = by_tip_mw < by_supply_mw ? by_tip_mw : by_supply_mw;
           const bool     needs_chop   = by_tip_mw > by_supply_mw;
-          bool           better       = deliverable > best_deliverable_mw;
+          // With no inductor the chop pulses run at the full tip current V / R. Sources with tight
+          // constant-current limiting (Apple adapters) fold the voltage back when the pulses are far
+          // above the PDO rating, so skip any PDO the pulses would overshoot by more than 50 % -
+          // e.g. on an Apple 35 W with a 5.5 ohm cartridge: 20 V / 1.75 A (pulses 2.1x) is rejected,
+          // 15 V / 2.33 A (pulses 1.17x) is used instead.
+          if (needs_chop && (by_tip_mw * 2) > (by_supply_mw * 3)) {
+            break;
+          }
+          bool better = deliverable > best_deliverable_mw;
           if (best_pdoid != 0xFF && !pps) {
             // Within 10 % of the best so far: the one without chopping wins, otherwise the higher voltage
             if (deliverable * 10 >= best_deliverable_mw * 9 && deliverable <= best_deliverable_mw) {
