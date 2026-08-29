@@ -83,12 +83,23 @@ void FS2711::start() {
   memset(&state, 0, sizeof(fs2711_state_t));
   state.req_pdo_num = 0xFF;
 
-  enable_protocol(false);
-  // PDNegTimeout is in 100ms, so x100 for ms
-  osDelay(getSettingValue(SettingsOptions::PDNegTimeout) * 100);
+  // Follow the stock firmware's bring-up (recovered from its disassembly): a full system reset and a
+  // mode-set / port-reset cycle, i.e. a clean re-attach. The previous "disable protocol, wait, enable"
+  // tore down the contract the chip had already auto-negotiated, which strict sources (Apple adapters
+  // among others) answer with a hard reset - VBUS drops and the iron brownouts in a loop.
+  i2c_write(FS2711_REG_SYSTEM_RESET, FS2711_ENABLE);
+  osDelay(100);
+  i2c_write(FS2711_REG_MODE_SET, 2);
+  i2c_write(FS2711_REG_PORT_RESET, 0);
+  osDelay(2);
+  i2c_write(FS2711_REG_MODE_SET, 0);
+  i2c_write(FS2711_REG_PORT_RESET, 1);
+
   select_protocol(FS2711_PROTOCOL_PD);
   enable_protocol(true);
-  osDelay(getSettingValue(SettingsOptions::PDNegTimeout) * 100);
+  // Stock waits 500 ms for the source to settle before reading the PDOs; PDNegTimeout can extend this
+  uint32_t waitMs = getSettingValue(SettingsOptions::PDNegTimeout) * 100;
+  osDelay(waitMs > 500 ? waitMs : 500);
 }
 
 uint8_t FS2711::selected_protocol() { return i2c_read(FS2711_REG_SELECT_PROTOCOL); }
