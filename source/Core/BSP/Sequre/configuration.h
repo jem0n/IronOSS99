@@ -288,7 +288,7 @@
 #define TIP_CURRENT_LIMIT_CHOP    1    // Envelope PWM for power, fast chop only for supply current limiting
 #define TIP_CHOP_FREQ_SETTING     1    // Expose the chop frequency as a user setting
 #define BUZZER_SETTING            1    // Expose the buzzer on/off as a user setting
-#define BUZZER_FREQ_HZ            6800 // Tone frequency; small piezos are loudest near their ~4 kHz resonance
+#define BUZZER_FREQ_HZ            3800 // Tone frequency; small piezos are loudest near their ~4 kHz resonance
 #define OLED_128x32_DENSE_UI      1    // See the note above the S60P block: enabled where the flash allows it
 #define HANDLE_DERATE_START_C     55   // Start reducing max power above this handle temperature
 #define HANDLE_DERATE_END_C       70   // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
