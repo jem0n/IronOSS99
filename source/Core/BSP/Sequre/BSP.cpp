@@ -109,7 +109,7 @@ static void switchToFastPWM(void) {
  * tried first and trips the over-current protection of some chargers, so it is deliberately not done.
  */
 static const uint16_t    tipChopPeriodTicks = 64 + 1;             // TIM4 ARR + 1
-static const uint16_t    tipChopPrescaler   = 20;                 // 8 MHz / (20+1) / 65 -> ~5.9 kHz; half the switching loss of the old 11 kHz
+static const uint16_t    tipChopPrescaler   = 10;                 // 8 MHz / (10+1) / 65 -> ~11.2 kHz like the S60: short current pulses keep the ripple at the charger small
 static volatile uint16_t tipDutyCapTicks    = tipChopPeriodTicks; // Largest TIM4 CCR3 the supply allows; ARR+1 == no limit
 static uint16_t          tipChopDutyX256    = 256;
 
