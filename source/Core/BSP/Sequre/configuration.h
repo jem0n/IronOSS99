@@ -26,7 +26,7 @@
 #define MIN_BRIGHTNESS     1   // Min OLED brightness selectable
 #define MAX_BRIGHTNESS     101 // Max OLED brightness selectable
 #define BRIGHTNESS_STEP    25  // OLED brightness increment
-#define DEFAULT_BRIGHTNESS 25  // default OLED brightness
+#define DEFAULT_BRIGHTNESS 1  // default OLED brightness
 
 /**
  * Blink the temperature on the cooling screen when its > 50C
@@ -102,7 +102,7 @@
 #define CUT_OUT_SETTING          0  // default to no cut-off voltage
 #define RECOM_VOL_CELL           33 // Minimum voltage per cell (Recommended 3.3V (33))
 #define TEMPERATURE_INF          0  // default to 0
-#define DESCRIPTION_SCROLL_SPEED 0  // 0: Slow 1: Fast - default to slow
+#define DESCRIPTION_SCROLL_SPEED 1  // 0: Slow 1: Fast - default to slow
 #define ANIMATION_LOOP           1  // 0: off 1: on
 #define ANIMATION_SPEED          settingOffSpeed_t::MEDIUM
 
@@ -282,13 +282,13 @@
  * current, and only inside the 20 Hz PWM on-time. See BSP.cpp. Cartridge resistance is a setting
  * (stock 5.5 ohm / JBC 2.5 ohm), power is derated when the handle gets hot.
  */
-#define TIP_RESISTANCE            25   // x10 ohms; stock 5.5 ohm cartridge
+#define TIP_RESISTANCE            55   // x10 ohms; stock 5.5 ohm cartridge
 #define TIP_TYPE_SUPPORT          1    // Support for tips of different types, i.e. resistance
-#define TIPTYPE_C245              2    // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
+#define TIPTYPE_C245              1    // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
 #define TIP_CURRENT_LIMIT_CHOP    1    // Envelope PWM for power, fast chop only for supply current limiting
 #define TIP_CHOP_FREQ_SETTING     1    // Expose the chop frequency as a user setting
 #define BUZZER_SETTING            1    // Expose the buzzer on/off as a user setting
-#define BUZZER_FREQ_HZ            2800 // Tone frequency; small piezos are loudest near their ~4 kHz resonance
+#define BUZZER_FREQ_HZ            6800 // Tone frequency; small piezos are loudest near their ~4 kHz resonance
 #define OLED_128x32_DENSE_UI      1    // See the note above the S60P block: enabled where the flash allows it
 #define HANDLE_DERATE_START_C     55   // Start reducing max power above this handle temperature
 #define HANDLE_DERATE_END_C       70   // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
