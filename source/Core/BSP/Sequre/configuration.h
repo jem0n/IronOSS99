@@ -282,7 +282,7 @@
  * current, and only inside the 20 Hz PWM on-time. See BSP.cpp. Cartridge resistance is a setting
  * (stock 5.5 ohm / JBC 2.5 ohm), power is derated when the handle gets hot.
  */
-#define TIP_RESISTANCE            55   // x10 ohms; stock 5.5 ohm cartridge
+#define TIP_RESISTANCE            25   // x10 ohms; stock 5.5 ohm cartridge
 #define TIP_TYPE_SUPPORT          1    // Support for tips of different types, i.e. resistance
 #define TIPTYPE_C245              1    // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
 #define TIP_CURRENT_LIMIT_CHOP    1    // Envelope PWM for power, fast chop only for supply current limiting
