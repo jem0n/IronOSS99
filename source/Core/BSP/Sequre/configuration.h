@@ -210,7 +210,7 @@
 // Hold back left button for "DFU"
 
 #define SOLDERING_TEMP         200 // Default soldering temp is 200.0 °C
-#define VOLTAGE_DIV            460 // Default divider scaler
+#define VOLTAGE_DIV            464 // Default divider scaler = 460
 #define MIN_CALIBRATION_OFFSET 0   // Should be 0
 #define CALIBRATION_OFFSET     0   // Default adc offset in uV
 #define PID_POWER_LIMIT        70  // Sets the max pwm power limit
