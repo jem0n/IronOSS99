@@ -286,8 +286,9 @@
 #define TIP_TYPE_SUPPORT          1    // Support for tips of different types, i.e. resistance
 #define TIPTYPE_C245              1    // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
 #define TIP_CURRENT_LIMIT_CHOP    1    // Envelope PWM for power, fast chop only for supply current limiting
+#define TIP_CHOP_FREQ_SETTING     1    // Expose the chop frequency as a user setting
 #define BUZZER_SETTING            1    // Expose the buzzer on/off as a user setting
-#define BUZZER_FREQ_HZ            4000 // Tone frequency; small piezos are loudest near their ~4 kHz resonance
+#define BUZZER_FREQ_HZ            2800 // Tone frequency; small piezos are loudest near their ~4 kHz resonance
 #define OLED_128x32_DENSE_UI      1    // See the note above the S60P block: enabled where the flash allows it
 #define HANDLE_DERATE_START_C     55   // Start reducing max power above this handle temperature
 #define HANDLE_DERATE_END_C       70   // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
@@ -327,7 +328,7 @@
 #define MIN_CALIBRATION_OFFSET 100 // Min value for calibration
 #endif
 #ifndef SOLDERING_TEMP
-#define SOLDERING_TEMP 320 // Default soldering temp is 320.0 °C
+#define SOLDERING_TEMP 280 // Default soldering temp is 280.0 °C
 #endif
 #ifndef PID_TIM_HZ
 #define PID_TIM_HZ (8) // Tick rate of the PID loop
