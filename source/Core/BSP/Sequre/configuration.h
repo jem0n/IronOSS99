@@ -260,7 +260,7 @@
 #define VOLTAGE_DIV        464 // Default divider scaler = 460
 #define CALIBRATION_OFFSET 200 // Default adc offset in uV
 #define PID_POWER_LIMIT    70  // Sets the max pwm power limit
-#define POWER_LIMIT        60   // 0 watts default limit
+#define POWER_LIMIT        80   // 0 watts default limit
 #define MAX_POWER_LIMIT    130
 #define POWER_LIMIT_STEPS  5
 #define OP_AMP_GAIN_STAGE  237 // Two sequential op-amps 1st: 1+(9k29/997R)=10.31 2nd: 1+(22k/1k)=23 -> 10.31*23=237
