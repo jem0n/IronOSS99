@@ -197,52 +197,6 @@ void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM) {
   PWMSafetyTimer = 20; // This is decremented in the handler for PWM so that the tip pwm is
                        // disabled if the PID task is not scheduled often enough.
   pendingPWM = pulse;
-}
-// These are called by the HAL after the corresponding events from the system
-// timers.
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-  // Period has elapsed
-  if (htim->Instance == TIM2) {
-    // Start of a new envelope period
-    if (PWMSafetyTimer) {
-      PWMSafetyTimer--;
-    }
-    // We decrement this safety value so that lockups in the
-    // scheduler will not cause the PWM to become locked in an
-    // active driving state.
-    if (PWMSafetyTimer == 0 || pendingPWM == 0) {
-      htim2.Instance->CCR4 = 0;
-      htim4.Instance->CCR3 = 0;
-    } else {
-      htim2.Instance->CCR4 = pendingPWM;     // Envelope on-time, always < holdoff / ADC trigger point
-      htim4.Instance->CCR3 = tipChopCompare; // Chop only as hard as the supply needs
-    }
-  } else if (htim->Instance == TIM1) {
-    // STM uses this for internal functions as a counter for timeouts
-    HAL_IncTick();
-  }
-#ifdef BUZZER_Pin
-  else if (htim->Instance == TIM3) {
-    // Buzzer tone: square wave on a plain GPIO
-    HAL_GPIO_TogglePin(BUZZER_GPIO_Port, BUZZER_Pin);
-  }
-#endif
-}
-
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
-  // End of the envelope on-time
-  if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-    htim4.Instance->CCR3 = 0;
-  }
-}
-
-#else /* !TIP_CURRENT_LIMIT_CHOP : original always-chop scheme (S60 / S60P / T55) */
-
-void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM) {
-  PWMSafetyTimer = 20; // This is decremented in the handler for PWM so that the tip pwm is
-                       // disabled if the PID task is not scheduled often enough.
-  pendingPWM = pulse;
 #ifdef TIP_CURRENT_LIMIT_CHOP
   getTipChopDutyX256(); // Re-evaluate the supply current cap every PID cycle (voltage / PDO / user limit can change)
 #endif
@@ -253,8 +207,8 @@ void setTipPWM(const uint8_t pulse, const bool shouldUseFastModePWM) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   // Period has elapsed
   if (htim->Instance == TIM2) {
+    // Start of a new envelope period
     // we want to turn on the output again
-    // PWMSafetyTimer--;
     if (PWMSafetyTimer) {
       PWMSafetyTimer--;
     }
