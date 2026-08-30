@@ -227,6 +227,15 @@ void FS2711::negotiate() {
   if (getSettingValue(SettingsOptions::USBPDMode) == usbpdMode_t::DEFAULT) {
     tip_resistance += 5;
   }
+#ifdef TIP_CURRENT_LIMIT_CHOP
+  // No inductor: a PDO whose current is below V / R_tip can only be used by chopping the output, which shows up
+  // at the charger as current pulses at the full tip current. So pick the PDO that delivers the most power as
+  // min(V^2 / R, V * I) and, within 10 %, prefer one that does not need chopping at all - e.g. 15 V / 3 A over
+  // 20 V / 2.25 A for a 5.5 ohm cartridge (41 W clean instead of 45 W pulsed).
+  const uint16_t real_tip_resistance = getTipResistanceX10() > 0 ? getTipResistanceX10() : 1;
+  uint32_t       best_deliverable_mw = 0;
+  bool           best_needs_chop     = true;
+#endif  
 #ifdef MODEL_HAS_DCDC
   // If this device has step down DC/DC inductor to smooth out current spikes
   // We can instead ignore resistance and go for max voltage we can accept; and rely on the DC/DC regulation to keep under current limit
@@ -248,6 +257,34 @@ void FS2711::negotiate() {
     switch (pdo_type) {
     case FS2711_PDO_FIX:
       if (pdo_max_mv > 0 && vmax >= pdo_max_mv) {
+#ifdef TIP_CURRENT_LIMIT_CHOP
+        {
+          const uint32_t v_mv         = pdo_max_mv;
+          const uint32_t by_tip_mw    = (v_mv * v_mv * 10) / real_tip_resistance / 1000; // V^2 / R
+          const uint32_t by_supply_mw = (v_mv * pdo_max_curr) / 1000;                    // V * I
+          const uint32_t deliverable  = by_tip_mw < by_supply_mw ? by_tip_mw : by_supply_mw;
+          const bool     needs_chop   = by_tip_mw > by_supply_mw;
+          bool           better       = deliverable > best_deliverable_mw;
+          if (best_pdoid != 0xFF && !pps) {
+            // Within 10 % of the best so far: the one without chopping wins, otherwise the higher voltage
+            if (deliverable * 10 >= best_deliverable_mw * 9 && deliverable <= best_deliverable_mw) {
+              better = best_needs_chop && !needs_chop;
+            } else if (deliverable >= best_deliverable_mw && deliverable * 9 <= best_deliverable_mw * 10) {
+              better = !(needs_chop && !best_needs_chop);
+            }
+          }
+          if (better) {
+            pps                 = false;
+            best_pdoid          = i;
+            best_voltage        = pdo_max_mv;
+            best_current        = pdo_max_curr;
+            best_deliverable_mw = deliverable;
+            best_needs_chop     = needs_chop;
+          }
+        }
+        (void)min_resistance_omhsx10;
+        (void)tip_resistance;
+#else
         if (min_resistance_omhsx10 <= tip_resistance) {
           if (pdo_max_mv > best_voltage) {
             pps          = false;
@@ -256,6 +293,7 @@ void FS2711::negotiate() {
             best_current = pdo_max_curr;
           }
         }
+#endif /* TIP_CURRENT_LIMIT_CHOP */
       }
       break;
 
