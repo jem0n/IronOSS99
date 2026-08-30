@@ -329,7 +329,7 @@
 #define MIN_CALIBRATION_OFFSET 100 // Min value for calibration
 #endif
 #ifndef SOLDERING_TEMP
-#define SOLDERING_TEMP 280 // Default soldering temp is 280.0 °C
+#define SOLDERING_TEMP 40 // Default soldering temp is 280.0 °C
 #endif
 #ifndef PID_TIM_HZ
 #define PID_TIM_HZ (8) // Tick rate of the PID loop
