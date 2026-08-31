@@ -131,7 +131,7 @@ static uint8_t tipChopThermalStep(void) {
   static uint8_t step    = 0;
   const int16_t  handleC = getHandleTemperature(0) / 10;
 #ifdef TIP_PWM_SLOWDOWN_SETTING
-  // The user can only lower the thresholds (the setting maxes out at the default), never disable them
+  // User adjustable between 25 C and TIP_PWM_SLOWDOWN_MAX_C; the power derate and the die cut-out are unaffected
   const int16_t upper = getSettingValue(SettingsOptions::TipPWMSlowdownTemp);
 #else
   const int16_t upper = TIP_PWM_SLOWDOWN_2_C;

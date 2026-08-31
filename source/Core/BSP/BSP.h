@@ -14,6 +14,9 @@
 #ifndef TIP_PWM_SLOWDOWN_1_C
 #define TIP_PWM_SLOWDOWN_1_C 35
 #endif
+#ifndef TIP_PWM_SLOWDOWN_MAX_C
+#define TIP_PWM_SLOWDOWN_MAX_C 55
+#endif
 #include <stdbool.h>
 #include <stdint.h>
 
