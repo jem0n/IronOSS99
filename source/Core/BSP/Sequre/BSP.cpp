@@ -108,12 +108,32 @@ static void switchToFastPWM(void) {
  * the cold start uncovered. Realising the power as bursts (a 20 Hz envelope with the chop inside) was
  * tried first and trips the over-current protection of some chargers, so it is deliberately not done.
  */
-static const uint16_t    tipChopPeriodTicks = 64 + 1;             // TIM4 ARR + 1
-static const uint16_t    tipChopPrescaler   = 10;                 // 8 MHz / (10+1) / 65 -> ~11.2 kHz like the S60: short current pulses keep the ripple at the charger small
-static volatile uint16_t tipDutyCapTicks    = tipChopPeriodTicks; // Largest TIM4 CCR3 the supply allows; ARR+1 == no limit
-static uint16_t          tipChopDutyX256    = 256;
+static const uint16_t tipChopPeriodTicks = 64 + 1; // TIM4 ARR + 1
+/*
+ * Chop frequency follows the peak tip current. Switching loss is proportional to frequency x current and
+ * the gate drive is weak, so a 2.5 ohm cartridge on 20 V (8 A) cooks the MOSFET at 11 kHz - users had to
+ * dial the frequency down by hand to keep the handle comfortable. A 5.5 ohm cartridge (3.6 A) stays at
+ * the S60's 11 kHz, where the short current pulses are easiest on the supply.
+ */
+static const uint16_t tipChopPrescalerFor(uint32_t tipCurrentx100) {
+  if (tipCurrentx100 >= 700) {
+    return 80; // ~1.5 kHz above 7 A
+  }
+  if (tipCurrentx100 >= 550) {
+    return 40; // ~3.0 kHz above 5.5 A
+  }
+  if (tipCurrentx100 >= 400) {
+    return 20; // ~5.9 kHz above 4 A
+  }
+  return 10; // ~11.2 kHz like the S60
+}
 
-static void applyTipChopPrescaler(void) {
+static uint16_t          tipChopPrescaler = 10;
+static volatile uint16_t tipDutyCapTicks  = tipChopPeriodTicks; // Largest TIM4 CCR3 the supply allows; ARR+1 == no limit
+static uint16_t          tipChopDutyX256  = 256;
+
+static void applyTipChopPrescaler(uint32_t tipCurrentx100) {
+  tipChopPrescaler = tipChopPrescalerFor(tipCurrentx100);
   if (htim4.Instance->PSC != tipChopPrescaler) {
     htim4.Instance->PSC = tipChopPrescaler;
     htim4.Instance->EGR = TIM_EGR_UG; // Load the new prescaler now rather than at next update
@@ -168,7 +188,7 @@ uint16_t getTipChopDutyX256() {
     }
   }
   tipDutyCapTicks = cap;
-  applyTipChopPrescaler();
+  applyTipChopPrescaler(tipCurrentx100);
   return tipChopDutyX256;
 }
 #endif /* TIP_CURRENT_LIMIT_CHOP */

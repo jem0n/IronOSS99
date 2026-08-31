@@ -231,6 +231,13 @@ void FS2711::negotiate() {
   const uint16_t real_tip_resistance = getTipResistanceX10() > 0 ? getTipResistanceX10() : 1;
   uint32_t       best_deliverable_mw = 0;
   bool           best_needs_chop     = true;
+  // Second candidate: the best PDO whose chop pulses stay within 1.5x its rating. Sources with tight
+  // constant-current limiting fold back on harder pulses, but a low resistance cartridge cannot avoid
+  // them at all, so this is only preferred when it does not cost most of the power (see below).
+  uint8_t  gentle_pdoid          = 0xFF;
+  uint16_t gentle_voltage        = 0;
+  uint16_t gentle_current        = 0;
+  uint32_t gentle_deliverable_mw = 0;
 #endif
 #ifdef MODEL_HAS_DCDC
   // If this device has step down DC/DC inductor to smooth out current spikes
@@ -260,13 +267,14 @@ void FS2711::negotiate() {
           const uint32_t by_supply_mw = (v_mv * pdo_max_curr) / 1000;                    // V * I
           const uint32_t deliverable  = by_tip_mw < by_supply_mw ? by_tip_mw : by_supply_mw;
           const bool     needs_chop   = by_tip_mw > by_supply_mw;
-          // With no inductor the chop pulses run at the full tip current V / R. Sources with tight
-          // constant-current limiting (Apple adapters) fold the voltage back when the pulses are far
-          // above the PDO rating, so skip any PDO the pulses would overshoot by more than 50 % -
-          // e.g. on an Apple 35 W with a 5.5 ohm cartridge: 20 V / 1.75 A (pulses 2.1x) is rejected,
-          // 15 V / 2.33 A (pulses 1.17x) is used instead.
-          if (needs_chop && (by_tip_mw * 2) > (by_supply_mw * 3)) {
-            break;
+          // With no inductor the chop pulses run at the full tip current V / R
+          if (!needs_chop || (by_tip_mw * 2) <= (by_supply_mw * 3)) {
+            if (deliverable > gentle_deliverable_mw) {
+              gentle_pdoid          = i;
+              gentle_voltage        = pdo_max_mv;
+              gentle_current        = pdo_max_curr;
+              gentle_deliverable_mw = deliverable;
+            }
           }
           bool better = deliverable > best_deliverable_mw;
           if (best_pdoid != 0xFF && !pps) {
@@ -325,6 +333,18 @@ void FS2711::negotiate() {
       break;
     }
   }
+
+#ifdef TIP_CURRENT_LIMIT_CHOP
+  // Prefer the gentle PDO only while it keeps at least 70 % of the power: an Apple 35 W adapter with a
+  // 5.5 ohm cartridge moves from 20 V / 1.75 A (pulses 2.1x its rating, browns out) to 15 V / 2.33 A
+  // (31 W), while a 2.5 ohm cartridge - which cannot be run without hard pulses on any PDO - keeps
+  // 20 V / 3.25 A (58 W) instead of dropping to 9 V (20 W).
+  if (!pps && gentle_pdoid != 0xFF && gentle_pdoid != best_pdoid && (gentle_deliverable_mw * 10) >= (best_deliverable_mw * 7)) {
+    best_pdoid   = gentle_pdoid;
+    best_voltage = gentle_voltage;
+    best_current = gentle_current;
+  }
+#endif
 
   if (best_pdoid != 0xFF && best_pdoid != state.req_pdo_num) {
     if (pps) {
