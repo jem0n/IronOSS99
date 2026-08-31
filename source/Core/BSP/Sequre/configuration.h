@@ -16,7 +16,7 @@
  */
 
 #define SLEEP_TEMP         150 // Default sleep temperature
-#define BOOST_TEMP         420 // Default boost temp.
+#define BOOST_TEMP         400 // Default boost temp.
 #define BOOST_MODE_ENABLED 1   // 0: Disable 1: Enable
 
 /**
@@ -31,14 +31,14 @@
 /**
  * Blink the temperature on the cooling screen when its > 50C
  */
-#define COOLING_TEMP_BLINK 0 // 0: Disable 1: Enable
+#define COOLING_TEMP_BLINK 1 // 0: Disable 1: Enable
 
 /**
  * How many seconds/minutes we wait until going to sleep/shutdown.
  * Values -> SLEEP_TIME * 10; i.e. 5*10 = 50 Seconds!
  */
-#define SLEEP_TIME    5  // x10 Seconds
-#define SHUTDOWN_TIME 10 // Minutes
+#define SLEEP_TIME    4  // x10 Seconds
+#define SHUTDOWN_TIME 1 // Minutes
 
 /**
  * Auto start off for safety.
@@ -71,8 +71,8 @@
 /**
  * Temp change settings
  */
-#define TEMP_CHANGE_SHORT_STEP     1  // Default temp change short step +1
-#define TEMP_CHANGE_LONG_STEP      10 // Default temp change long step +10
+#define TEMP_CHANGE_SHORT_STEP     10  // Default temp change short step +1
+#define TEMP_CHANGE_LONG_STEP      20 // Default temp change long step +10
 #define TEMP_CHANGE_SHORT_STEP_MAX 50 // Temp change short step MAX value
 #define TEMP_CHANGE_LONG_STEP_MAX  90 // Temp change long step MAX value
 
@@ -90,14 +90,14 @@
  * OLED Orientation Sensitivity on Automatic mode!
  * Motion Sensitivity <0=Off 1=Least Sensitive 9=Most Sensitive>
  */
-#define SENSITIVITY 7 // Default 7
+#define SENSITIVITY 9 // Default 7
 
 /**
  * Detailed soldering screen
  * Detailed idle screen (off for first time users)
  */
-#define DETAILED_SOLDERING 0 // 0: Disable 1: Enable - Default 0
-#define DETAILED_IDLE      0 // 0: Disable 1: Enable - Default 0
+#define DETAILED_SOLDERING 1 // 0: Disable 1: Enable - Default 0
+#define DETAILED_IDLE      1 // 0: Disable 1: Enable - Default 0
 
 #define CUT_OUT_SETTING          0  // default to no cut-off voltage
 #define RECOM_VOL_CELL           33 // Minimum voltage per cell (Recommended 3.3V (33))
@@ -257,10 +257,10 @@
 #endif                 /* T55 */
 
 #ifdef MODEL_S99
-#define VOLTAGE_DIV        460 // Default divider scaler
+#define VOLTAGE_DIV        464 // Default divider scaler
 #define CALIBRATION_OFFSET 200 // Default adc offset in uV
 #define PID_POWER_LIMIT    70  // Sets the max pwm power limit
-#define POWER_LIMIT        0   // 0 watts default limit
+#define POWER_LIMIT        80   // 0 watts default limit
 #define MAX_POWER_LIMIT    130
 #define POWER_LIMIT_STEPS  5
 #define OP_AMP_GAIN_STAGE  237 // Two sequential op-amps 1st: 1+(9k29/997R)=10.31 2nd: 1+(22k/1k)=23 -> 10.31*23=237
@@ -282,12 +282,12 @@
  * TIP_CURRENT_LIMIT_CHOP additionally caps that duty at the supply current limit (see BSP.cpp).
  * Cartridge resistance is a setting (stock 5.5 ohm / JBC 2.5 ohm), power is derated when the handle gets hot.
  */
-#define TIP_RESISTANCE            55   // x10 ohms; stock 5.5 ohm cartridge
+#define TIP_RESISTANCE            25   // x10 ohms; stock 5.5 ohm cartridge
 #define TIP_TYPE_SUPPORT          1    // Support for tips of different types, i.e. resistance
 #define TIPTYPE_C245              1    // Sequre 5.5 ohm stock or JBC/Relife style 2.5 ohm C245 cartridges
 #define TIP_CURRENT_LIMIT_CHOP    1    // Envelope PWM for power, fast chop only for supply current limiting
 #define BUZZER_SETTING            1    // Expose the buzzer on/off as a user setting
-#define BUZZER_FREQ_HZ            4000 // Tone frequency; small piezos are loudest near their ~4 kHz resonance
+#define BUZZER_FREQ_HZ            3600 // Tone frequency; small piezos are loudest near their ~4 kHz resonance
 #define OLED_128x32_DENSE_UI      1    // See the note above the S60P block: enabled where the flash allows it
 #define HANDLE_DERATE_START_C     55   // Start reducing max power above this handle temperature
 #define HANDLE_DERATE_END_C       70   // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
@@ -331,7 +331,7 @@
 #define MIN_CALIBRATION_OFFSET 100 // Min value for calibration
 #endif
 #ifndef SOLDERING_TEMP
-#define SOLDERING_TEMP 320 // Default soldering temp is 320.0 °C
+#define SOLDERING_TEMP 40 // Default soldering temp is 320.0 °C
 #endif
 #ifndef PID_TIM_HZ
 #define PID_TIM_HZ (8) // Tick rate of the PID loop
