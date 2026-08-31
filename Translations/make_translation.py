@@ -160,7 +160,7 @@ def get_constants() -> List[Tuple[str, str]]:
     ]
 
 
-def get_debug_menu() -> List[str]:
+def get_debug_menu(macros: frozenset = frozenset()) -> List[str]:
     return [
         time.strftime(
             "%Y%m%d %H%M%S",
@@ -182,8 +182,7 @@ def get_debug_menu() -> List[str]:
         "HW M   ",
         "HW P   ",
         "Hall   ",
-        "MCU C  ",
-    ]
+    ] + (["MCU C  "] if "MCU_TEMP_CUTOFF_C" in macros else [])
 
 
 def get_accel_names_list() -> List[str]:
@@ -213,6 +212,8 @@ def get_power_source_list() -> List[str]:
 # (Terminus 8x16) font instead of the large one, so they must be ranked and
 # encoded against the small font. Set from the build macros in main().
 DESCRIPTIONS_USE_SMALL_FONT = False
+# Build macros of the model being generated for; set in main()
+BUILD_MACROS: frozenset = frozenset()
 
 
 def test_is_small_font(msg: str) -> bool:
@@ -355,7 +356,7 @@ def get_letter_counts(defs: dict, lang: dict, build_version: str) -> Dict:
     small_font_messages.append("°")
     big_font_messages.append("°")
 
-    small_font_messages.extend(get_debug_menu())
+    small_font_messages.extend(get_debug_menu(BUILD_MACROS))
     small_font_messages.extend(get_accel_names_list())
     small_font_messages.extend(get_power_source_list())
 
@@ -1276,7 +1277,7 @@ def get_translation_common_text(
     # Debug Menu
     translation_common_text += "const char* DebugMenu[] = {\n"
 
-    for c in get_debug_menu():
+    for c in get_debug_menu(BUILD_MACROS):
         translation_common_text += (
             f'\t "{convert_string(small_symbol_conversion_table, c)}",//"{c}" \n'
         )
@@ -1710,6 +1711,8 @@ def main() -> None:
     # to the large font (see description_uses_small_font), since the small font
     # has no CJK glyphs.
     DESCRIPTIONS_USE_SMALL_FONT = "OLED_128x32" in macros
+    global BUILD_MACROS
+    BUILD_MACROS = macros
 
     language_data: LanguageData
     if args.input_pickled:

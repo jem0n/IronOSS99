@@ -18,12 +18,15 @@ from .settings_util import resolve_expression
 class SettingsEntry:
     """Represents a single settings entry definition"""
 
-    def __init__(self, min_value, max_value, increment, default, name):
+    def __init__(self, min_value, max_value, increment, default, name, ifdef=None):
         self.min = min_value
         self.max = max_value
         self.increment = increment
         self.default = default
         self.name = name
+        # Optional macro: the entry only exists on models that define it (keeps the table off
+        # devices that do not have the feature and are tight on flash)
+        self.ifdef = ifdef
 
     def __str__(self):
         return f"{self.name}: {self.default} (min: {self.min}, max: {self.max}, increment: {self.increment})"
@@ -53,6 +56,7 @@ class Settings:
                 setting["increment"],
                 setting["default"],
                 setting["name"],
+                setting.get("ifdef"),
             )
             self.entries.append(entry)
 
@@ -166,7 +170,9 @@ class Settings:
             print(f"Error loading settings from file: {e}")
             return False, 0
 
-    def save_to_binary(self, file_path: str, base_address:int, versionMarker:int) -> bool:
+    def save_to_binary(
+        self, file_path: str, base_address: int, versionMarker: int
+    ) -> bool:
         """Save settings to a binary or hex file
 
         Args:
