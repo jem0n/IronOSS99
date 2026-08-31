@@ -110,30 +110,42 @@ static void switchToFastPWM(void) {
  */
 static const uint16_t tipChopPeriodTicks = 64 + 1; // TIM4 ARR + 1
 /*
- * Chop frequency follows the peak tip current. Switching loss is proportional to frequency x current and
- * the gate drive is weak, so a 2.5 ohm cartridge on 20 V (8 A) cooks the MOSFET at 11 kHz - users had to
- * dial the frequency down by hand to keep the handle comfortable. A 5.5 ohm cartridge (3.6 A) stays at
- * the S60's 11 kHz, where the short current pulses are easiest on the supply.
+ * PWM frequency. Switching loss is proportional to frequency x tip current and the gate drive is weak, so
+ * the MOSFET runs hot at 11 kHz even with the 5.5 ohm cartridge (~0.4 W of switching loss on its own),
+ * while switching slowly makes the current pulses longer, which supplies with little output capacitance
+ * do not like. Rather than guessing a compromise from the cartridge resistance, the frequency is regulated
+ * by the temperature of the MOSFET itself: the handle NTC sits next to it (which is why the power derate
+ * uses it too), so as long as the handle stays cool the fastest sensible frequency is used, and each
+ * temperature step drops it further. 5 C of hysteresis keeps it from oscillating between steps.
+ *
+ * Base step: current limited and below 5.5 A -> 5.9 kHz (short pulses for the supply), above 5.5 A one
+ * step slower, and when the duty is not capped at all - or on DC, where there is no source to upset -
+ * ~2.4 kHz, which is what the S60 does once it is resistance limited (see preStartChecks below).
  */
-static const uint16_t tipChopPrescalerFor(uint32_t tipCurrentx100) {
-  if (tipCurrentx100 >= 700) {
-    return 80; // ~1.5 kHz above 7 A
+static const uint16_t tipChopPrescalers[]   = {20, 40, 50, 80}; // ~5.9 / 3.0 / 2.4 / 1.5 kHz
+static const uint8_t  tipChopPrescalerCount = sizeof(tipChopPrescalers) / sizeof(tipChopPrescalers[0]);
+
+static uint8_t tipChopThermalStep(void) {
+  static uint8_t step    = 0;
+  const int16_t  handleC = getHandleTemperature(0) / 10;
+  if (step == 0 && handleC >= 45) {
+    step = 1;
+  } else if (step == 1 && handleC >= 55) {
+    step = 2;
+  } else if (step == 2 && handleC < 50) {
+    step = 1;
+  } else if (step == 1 && handleC < 40) {
+    step = 0;
   }
-  if (tipCurrentx100 >= 550) {
-    return 40; // ~3.0 kHz above 5.5 A
-  }
-  if (tipCurrentx100 >= 400) {
-    return 20; // ~5.9 kHz above 4 A
-  }
-  return 10; // ~11.2 kHz like the S60
+  return step;
 }
 
-static uint16_t          tipChopPrescaler = 10;
+static uint16_t          tipChopPrescaler = 50;
 static volatile uint16_t tipDutyCapTicks  = tipChopPeriodTicks; // Largest TIM4 CCR3 the supply allows; ARR+1 == no limit
 static uint16_t          tipChopDutyX256  = 256;
 
-static void applyTipChopPrescaler(uint32_t tipCurrentx100) {
-  tipChopPrescaler = tipChopPrescalerFor(tipCurrentx100);
+static void applyTipChopPrescaler(uint16_t prescaler) {
+  tipChopPrescaler = prescaler;
   if (htim4.Instance->PSC != tipChopPrescaler) {
     htim4.Instance->PSC = tipChopPrescaler;
     htim4.Instance->EGR = TIM_EGR_UG; // Load the new prescaler now rather than at next update
@@ -188,7 +200,13 @@ uint16_t getTipChopDutyX256() {
     }
   }
   tipDutyCapTicks = cap;
-  applyTipChopPrescaler(tipCurrentx100);
+
+  uint8_t step = (dutyX256 >= 256 || getIsPoweredByDCIN()) ? 2 : (tipCurrentx100 > 550 ? 1 : 0);
+  step += tipChopThermalStep();
+  if (step >= tipChopPrescalerCount) {
+    step = tipChopPrescalerCount - 1;
+  }
+  applyTipChopPrescaler(tipChopPrescalers[step]);
   return tipChopDutyX256;
 }
 #endif /* TIP_CURRENT_LIMIT_CHOP */
