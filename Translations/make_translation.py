@@ -182,6 +182,7 @@ def get_debug_menu() -> List[str]:
         "HW M   ",
         "HW P   ",
         "Hall   ",
+        "MCU C  ",
     ]
 
 
