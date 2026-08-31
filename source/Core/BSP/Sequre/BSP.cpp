@@ -118,11 +118,13 @@ static const uint16_t tipChopPeriodTicks = 64 + 1; // TIM4 ARR + 1
  * uses it too), so as long as the handle stays cool the fastest sensible frequency is used, and each
  * temperature step drops it further. 5 C of hysteresis keeps it from oscillating between steps.
  *
- * Base step: current limited and below 5.5 A -> 5.9 kHz (short pulses for the supply), above 5.5 A one
- * step slower, and when the duty is not capped at all - or on DC, where there is no source to upset -
- * ~2.4 kHz, which is what the S60 does once it is resistance limited (see preStartChecks below).
+ * Base step: while the duty is capped to the supply current the pulses should be as short as possible, so
+ * it starts at the S60's 11.2 kHz (one step lower above 5.5 A, where a 2.5 ohm cartridge would otherwise
+ * burn ~0.9 W in switching loss alone). Starting fast is only safe because the loop below walks it back
+ * down as soon as the FET warms up. With no cap - or on DC, where there is no source to upset - it starts
+ * at ~2.4 kHz, which is what the S60 does once it is resistance limited (see preStartChecks below).
  */
-static const uint16_t tipChopPrescalers[]   = {20, 40, 50, 80}; // ~5.9 / 3.0 / 2.4 / 1.5 kHz
+static const uint16_t tipChopPrescalers[]   = {10, 20, 40, 50, 80}; // ~11.2 / 5.9 / 3.0 / 2.4 / 1.5 kHz
 static const uint8_t  tipChopPrescalerCount = sizeof(tipChopPrescalers) / sizeof(tipChopPrescalers[0]);
 
 static uint8_t tipChopThermalStep(void) {
@@ -201,7 +203,7 @@ uint16_t getTipChopDutyX256() {
   }
   tipDutyCapTicks = cap;
 
-  uint8_t step = (dutyX256 >= 256 || getIsPoweredByDCIN()) ? 2 : (tipCurrentx100 > 550 ? 1 : 0);
+  uint8_t step = (dutyX256 >= 256 || getIsPoweredByDCIN()) ? 3 : (tipCurrentx100 > 550 ? 1 : 0);
   step += tipChopThermalStep();
   if (step >= tipChopPrescalerCount) {
     step = tipChopPrescalerCount - 1;
