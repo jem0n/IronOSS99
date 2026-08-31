@@ -189,7 +189,7 @@ settings:
     max: 2
     min: 0
     name: BluetoothLE
-  - default: 0
+  - default: 1
     increment: 1
     max: 2
     min: 0
