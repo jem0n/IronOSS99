@@ -124,7 +124,7 @@ static const uint16_t tipChopPeriodTicks = 64 + 1; // TIM4 ARR + 1
  * down as soon as the FET warms up. With no cap - or on DC, where there is no source to upset - it starts
  * at ~2.4 kHz, which is what the S60 does once it is resistance limited (see preStartChecks below).
  */
-static const uint16_t tipChopPrescalers[]   = {10, 20, 40, 50, 80}; // ~11.2 / 5.9 / 3.0 / 2.4 / 1.5 kHz
+static const uint16_t tipChopPrescalers[]   = {10, 20, 40, 80, 120}; // ~11.2 / 5.9 / 3.0 / 1.5 / 1 kHz
 static const uint8_t  tipChopPrescalerCount = sizeof(tipChopPrescalers) / sizeof(tipChopPrescalers[0]);
 
 static uint8_t tipChopThermalStep(void) {
@@ -138,12 +138,12 @@ static uint8_t tipChopThermalStep(void) {
 #endif
   const int16_t lower = upper - (TIP_PWM_SLOWDOWN_2_C - TIP_PWM_SLOWDOWN_1_C);
   if (step == 0 && handleC >= lower) {
-    step = 1;
-  } else if (step == 1 && handleC >= upper) {
     step = 2;
-  } else if (step == 2 && handleC < (upper - 5)) {
-    step = 1;
-  } else if (step == 1 && handleC < (lower - 5)) {
+  } else if (step == 2 && handleC >= upper) {
+    step = 4;
+  } else if (step == 4 && handleC < (upper - 5)) {
+    step = 2;
+  } else if (step == 2 && handleC < (lower - 5)) {
     step = 0;
   }
   return step;
