@@ -5,6 +5,15 @@
 #include "Defines.h"
 #include "Types.h"
 #include "configuration.h"
+
+// Handle temperatures at which an inductorless output stage slows its PWM down (see the Sequre BSP).
+// Defaulted here so the generated settings table also builds on models that do not use them.
+#ifndef TIP_PWM_SLOWDOWN_2_C
+#define TIP_PWM_SLOWDOWN_2_C 45
+#endif
+#ifndef TIP_PWM_SLOWDOWN_1_C
+#define TIP_PWM_SLOWDOWN_1_C 35
+#endif
 #include <stdbool.h>
 #include <stdint.h>
 

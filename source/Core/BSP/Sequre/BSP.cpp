@@ -130,13 +130,20 @@ static const uint8_t  tipChopPrescalerCount = sizeof(tipChopPrescalers) / sizeof
 static uint8_t tipChopThermalStep(void) {
   static uint8_t step    = 0;
   const int16_t  handleC = getHandleTemperature(0) / 10;
-  if (step == 0 && handleC >= TIP_PWM_SLOWDOWN_1_C) {
+#ifdef TIP_PWM_SLOWDOWN_SETTING
+  // The user can only lower the thresholds (the setting maxes out at the default), never disable them
+  const int16_t upper = getSettingValue(SettingsOptions::TipPWMSlowdownTemp);
+#else
+  const int16_t upper = TIP_PWM_SLOWDOWN_2_C;
+#endif
+  const int16_t lower = upper - (TIP_PWM_SLOWDOWN_2_C - TIP_PWM_SLOWDOWN_1_C);
+  if (step == 0 && handleC >= lower) {
     step = 1;
-  } else if (step == 1 && handleC >= TIP_PWM_SLOWDOWN_2_C) {
+  } else if (step == 1 && handleC >= upper) {
     step = 2;
-  } else if (step == 2 && handleC < (TIP_PWM_SLOWDOWN_2_C - 5)) {
+  } else if (step == 2 && handleC < (upper - 5)) {
     step = 1;
-  } else if (step == 1 && handleC < (TIP_PWM_SLOWDOWN_1_C - 5)) {
+  } else if (step == 1 && handleC < (lower - 5)) {
     step = 0;
   }
   return step;
