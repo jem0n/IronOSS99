@@ -116,7 +116,7 @@ static const uint16_t tipChopPeriodTicks = 64 + 1; // TIM4 ARR + 1
  * do not like. Rather than guessing a compromise from the cartridge resistance, the frequency is regulated
  * by the temperature of the MOSFET itself: the handle NTC sits next to it (which is why the power derate
  * uses it too), so as long as the handle stays cool the fastest sensible frequency is used, and each
- * temperature step drops it further. 5 C of hysteresis keeps it from oscillating between steps.
+ * temperature step drops it further (TIP_PWM_SLOWDOWN_1_C / _2_C, 5 C of hysteresis on the way back).
  *
  * Base step: while the duty is capped to the supply current the pulses should be as short as possible, so
  * it starts at the S60's 11.2 kHz (one step lower above 5.5 A, where a 2.5 ohm cartridge would otherwise
@@ -130,13 +130,13 @@ static const uint8_t  tipChopPrescalerCount = sizeof(tipChopPrescalers) / sizeof
 static uint8_t tipChopThermalStep(void) {
   static uint8_t step    = 0;
   const int16_t  handleC = getHandleTemperature(0) / 10;
-  if (step == 0 && handleC >= 45) {
+  if (step == 0 && handleC >= TIP_PWM_SLOWDOWN_1_C) {
     step = 1;
-  } else if (step == 1 && handleC >= 55) {
+  } else if (step == 1 && handleC >= TIP_PWM_SLOWDOWN_2_C) {
     step = 2;
-  } else if (step == 2 && handleC < 50) {
+  } else if (step == 2 && handleC < (TIP_PWM_SLOWDOWN_2_C - 5)) {
     step = 1;
-  } else if (step == 1 && handleC < 40) {
+  } else if (step == 1 && handleC < (TIP_PWM_SLOWDOWN_1_C - 5)) {
     step = 0;
   }
   return step;

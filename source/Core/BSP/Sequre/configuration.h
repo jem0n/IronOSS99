@@ -292,6 +292,8 @@
 #define HANDLE_DERATE_START_C     55   // Start reducing max power above this handle temperature
 #define HANDLE_DERATE_END_C       70   // Reduced to HANDLE_DERATE_MIN_PERCENT at this handle temperature
 #define HANDLE_DERATE_MIN_PERCENT 20
+#define TIP_PWM_SLOWDOWN_1_C      35 // Handle temperature at which the output PWM drops one step (less switching loss)
+#define TIP_PWM_SLOWDOWN_2_C      45 // ... and a second step; 5 C of hysteresis on the way back up
 
 #define OLED_128x32
 #define GPIO_VIBRATION
