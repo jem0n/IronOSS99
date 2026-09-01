@@ -83,10 +83,19 @@ uint16_t getADCHandleTemp(uint8_t sample) {
 #endif
 }
 
-// STM32F1 internal temperature sensor, sampled into the odd DMA slots. The slope (4.3 mV / C) is
-// tight but V25 varies from 1.34 to 1.52 V between chips (+-20 C if the datasheet value is used
-// blindly), so the reading is referenced to the handle NTC once at boot instead: the die and the
-// handle are at the same temperature after a cold start, and from there on only the rise matters.
+// Internal temperature sensor on ADC channel 16, sampled into the odd DMA slots.
+//
+// These irons carry a CKS32F103 rather than an ST part, and this BSP already relies on it being
+// register compatible with the STM32F103 throughout; the sensor characteristics of the clone are
+// not published, and the ST ones vary a lot by themselves (V25 from 1.34 to 1.52 V, i.e. +-20 C if
+// the datasheet number is used blindly). So the absolute value is never trusted: the reading is
+// referenced to the handle NTC once at boot, when die and handle are at the same temperature, and
+// only the rise from there is used - which depends on the slope (4.3 mV / C) alone.
+//
+// If the clone were to lack the sensor, the channel reads a roughly constant value, the boot
+// reference pins it to the handle temperature and it never rises, so the cut-out simply never
+// fires. The handle NTC derate and the hardware wattage cap are the protections that do not
+// depend on this sensor.
 static int16_t mcuTempOffsetC = 0;
 
 static int16_t mcuTemperatureUncalibratedC(void) {
