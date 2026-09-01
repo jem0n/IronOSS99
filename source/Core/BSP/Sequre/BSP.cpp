@@ -26,41 +26,44 @@ void resetWatchdog() { HAL_IWDG_Refresh(&hiwdg); }
 // Lookup table for the NTC
 // We dont know exact specs, but it loooks to be roughly a 10K B=4000 NTC
 // Stored as ADCReading,Temp in degC
+// 10K NTC to 3V3 with a 13K series resistor, read as 32767 * R / (R + 13K). The rows up to 44 C are the
+// original ones; above that they are computed from the same curve (B = 4100, which reproduces those rows
+// to within one ADC count) so the handle temperature stays usable for cold junction compensation and for
+// derating when the handle and the MOSFET next to it get hot.
 static const uint16_t NTCHandleLookup[] = {
     // ADC Reading , Temp in C
-    23931, 0,     //
-    23210, 2,     //
-    22466, 4,     //
-    21703, 6,     //
-    20924, 8,     //
-    20135, 10,    //
-    19338, 12,    //
-    18538, 14,    //
-    17738, 16,    //
-    16943, 18,    //
-    16156, 20,    //
-    15381, 22,    //
-    14621, 24,    //
-    13878, 26,    //
-    13155, 28,    //
-    12455, 30,    //
-    11778, 32,    //
-    11126, 34,    //
-    10501, 36,    //
-    9902,  38,    //
-    9330,  40,    //
-    8786,  42,    //
-    8269,  44,    //
-    4000,  32767, //
-    7301,  48,    //
-    6437,  52,    //
-    5670,  56,    //
-    4990,  60,    //
-    4394,  64,    //
-    3871,  68,    //
-    3412,  72,    //
-    3011,  76,    //
-    2660,  80,    //
+    23931, 0,  //
+    23210, 2,  //
+    22466, 4,  //
+    21703, 6,  //
+    20924, 8,  //
+    20135, 10, //
+    19338, 12, //
+    18538, 14, //
+    17738, 16, //
+    16943, 18, //
+    16156, 20, //
+    15381, 22, //
+    14621, 24, //
+    13878, 26, //
+    13155, 28, //
+    12455, 30, //
+    11778, 32, //
+    11126, 34, //
+    10501, 36, //
+    9902,  38, //
+    9330,  40, //
+    8786,  42, //
+    8269,  44, //
+    7313,  48, //
+    6460,  52, //
+    5702,  56, //
+    5031,  60, //
+    4440,  64, //
+    3921,  68, //
+    3465,  72, //
+    3065,  76, //
+    2715,  80, //
 };
 
 int16_t getHandleTemperature(uint8_t sample) {
