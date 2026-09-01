@@ -32,7 +32,7 @@ void resetWatchdog() { HAL_IWDG_Refresh(&hiwdg); }
 // derating when the handle and the MOSFET next to it get hot.
 static const uint16_t NTCHandleLookup[] = {
     // ADC Reading , Temp in C
-23931, 0,  //
+    23931, 0,  //
     23210, 2,  //
     22466, 4,  //
     21703, 6,  //
